@@ -149,6 +149,7 @@ std::vector<SqlTemplate::TokenType> SqlTemplate::ParseTokens(const std::string& 
 }
 
 const SqlTemplate& SqlQueryStorage::GetTemplate(const std::string& name) const {
+    wxLogTrace(wxT("Trying to get template for query '%s'"), name);
     return storage_.at(name);
 }
 

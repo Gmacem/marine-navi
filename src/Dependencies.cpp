@@ -1,11 +1,13 @@
 #include "Dependencies.h"
 
-#include "cases/CheckPathCase.h"
-#include "cases/ForecastsLoader.h"
-#include "clients/DbClient.h"
-#include "clients/query_builder/SqlQueryStorage.h"
-#include "clients/Esimo.h"
-#include "RenderOverlay.h"
+#include <wx/log.h>
+
+#include <cases/CheckPathCase.h>
+#include <cases/ForecastsLoader.h>
+#include <clients/DbClient.h>
+#include <clients/query_builder/SqlQueryStorage.h>
+#include <clients/Esimo.h>
+#include <RenderOverlay.h>
 
 namespace marine_navi {
 
@@ -17,6 +19,8 @@ std::shared_ptr<clients::SqlQueryStorage> MakeSqlQueryStorage() {
   fn.SetPath(tmp_path);
   fn.AppendDir("data");
   fn.AppendDir("queries");
+  wxLogInfo(wxT("Path to queries '%s'"), fn.GetPath().ToStdString());
+
   return std::make_shared<clients::SqlQueryStorage>(fn.GetPath().ToStdString());
 }
 } // namespace 
