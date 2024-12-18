@@ -149,11 +149,11 @@ wxString MarineNaviPi::GetLongDescription() { return PKG_DESCRIPTION; }
 
 void MarineNaviPi::OnToolbarToolCallback(int id) {
   if (!dlg_) {
-    dlg_ = std::make_shared<marine_navi::MarineNaviMainDlg>(
+    dlg_ = std::make_shared<MarineNavi::dialogs::MarineNaviMainDlg>(
         parentWindow_, -1, "Main dialog", wxPoint(100, 100), wxSize(800, 800),
         deps_);
     dlg_->Register(std::bind(&MarineNaviPi::OnMainDlgClose, this),
-                   marine_navi::EventType::kClose);
+                   MarineNavi::dialogs::MarineNaviDlgBase::EventType::kClose);
   }
 
   // Toggle

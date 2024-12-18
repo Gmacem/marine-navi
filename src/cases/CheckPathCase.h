@@ -14,19 +14,19 @@
 namespace marine_navi::cases {
 
 struct PathData {
-  Utils::Point Start;
-  Utils::Point End;
-
+  std::shared_ptr<entities::Route> Route;
+  double Speed;
   std::optional<double> ShipDraft;
-  std::optional<std::string> PathToDepthFile;
   std::optional<double> MaxWaveHeight;
+  time_t DepartTime;
+  std::optional<std::string> PathToDepthFile;
 };
 
 class CheckPathCase {
   using Point = Utils::Point;
 
 public:
-  CheckPathCase(std::shared_ptr<marine_navi::clients::DbClient> db_client);
+  CheckPathCase(std::shared_ptr<MarineNavi::DbClient> dbClient);
   void SetPathData(const PathData& pathData);
   const PathData& GetPathData();
   void SetShow(bool show);
@@ -36,17 +36,17 @@ public:
   bool CheckDepth(const DepthGrid& grid, const Point& p, double draft) const;
   void CrossDetect();
 
-  std::optional<wxPoint2DDouble> GetLastResult();
+  std::optional<entities::Diagnostic> GetDiagnostic();
 
 private:
-  std::optional<wxPoint2DDouble> CrossDetectImpl() const;
+  std::optional<entities::Diagnostic> DoCrossDetect() const;
 
 private:
   std::mutex mutex_;
   PathData pathData_;
   bool show_;
-  std::shared_ptr<marine_navi::clients::DbClient> db_client_;
-  std::optional<wxPoint2DDouble> lastResult_;
+  std::shared_ptr<MarineNavi::DbClient> dbClient_;
+  std::optional<entities::Diagnostic> diagnostic_;
 };
 
 }  // namespace marine_navi::cases

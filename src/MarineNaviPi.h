@@ -23,7 +23,7 @@
 
 #include "ocpn_plugin.h"  //Required for OCPN plugin functions
 
-#include "dialogs/MainDialog.h"
+#include "dialogs/MainNotebook.h"
 #include "RenderOverlay.h"
 
 #include "pidc.h"
