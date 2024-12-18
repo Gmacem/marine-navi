@@ -5,7 +5,7 @@
 #include <ctime>
 #include <sstream>
 
-namespace MarineNavi::entities {
+namespace marine_navi::entities {
 
 struct Diagnostic {
   enum class ReasonType {
@@ -30,4 +30,4 @@ Diagnostic CreateNotDeepDiagnostic(Utils::Point location, Utils::Point nearest,
                                    time_t expectedTimeOfTroubles);
 
 std::string GetDiagnosticMessage(const Diagnostic& diagnostic);
-}  // namespace MarineNavi::entities
+}  // namespace marine_navi::entities

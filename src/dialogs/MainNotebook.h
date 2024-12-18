@@ -15,7 +15,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace MarineNavi::dialogs {
+namespace marine_navi::dialogs {
 
 class MarineNaviMainDlg;
 
@@ -60,8 +60,8 @@ private:
 private:
   MarineNaviMainDlg* dlg_;
   wxWindow* canvasWindow_;
-  std::shared_ptr<MarineNavi::cases::CheckPathCase> checkPathCase_;
-  std::shared_ptr<MarineNavi::cases::ForecastsLoader> forecastsLoader_;
+  std::shared_ptr<marine_navi::cases::CheckPathCase> checkPathCase_;
+  std::shared_ptr<marine_navi::cases::ForecastsLoader> forecastsLoader_;
 
   wxListBox* routeListBox_;
   wxTextCtrl* cRouteName_;
@@ -97,10 +97,8 @@ public:
   void UpdateDiagnostic(const entities::Diagnostic& diagnostic);
 
 private:
-  MarineNavi::Dependencies deps_;
-  wxWindow* parentWindow_;
-  std::shared_ptr<MarineNavi::dialogs::MarineNaviMainDlg> dlg_;
-  std::shared_ptr<MarineNavi::RenderOverlay> renderOverlay_;
+  MarineNaviMainPanel* mainPanel_;
+  DiagnosticPanel* diagnosticPanel_;
 };
 
-}  // namespace MarineNavi::dialogs
+}  // namespace marine_navi::dialogs

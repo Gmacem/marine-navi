@@ -2,7 +2,7 @@
 
 namespace marine_navi::cases {
 
-CheckPathCase::CheckPathCase(std::shared_ptr<MarineNavi::DbClient> dbClient)
+CheckPathCase::CheckPathCase(std::shared_ptr<clients::DbClient> dbClient)
     : mutex_(), pathData_(), show_(false), dbClient_(dbClient) {}
 
 void CheckPathCase::SetPathData(const PathData& pathData) {
@@ -40,7 +40,7 @@ bool CheckPathCase::CheckLandIntersection(const Point& p1,
                                   maxCorner.Lon);
 }
 
-bool CheckPathCase::CheckDepth(const DepthGrid& grid, const Point& p,
+bool CheckPathCase::CheckDepth(const entities::DepthGrid& grid, const Point& p,
                                double draft) const {
   auto depth = grid.GetDepth(p.Lat, p.Lon);
 
@@ -71,11 +71,11 @@ void CheckPathCase::CrossDetect() {
 
 std::optional<entities::Diagnostic> CheckPathCase::DoCrossDetect() const {
   static constexpr int ITER_NUM = 50;
-  std::optional<DepthGrid> grid;
+  std::optional<entities::DepthGrid> grid;
   auto route = pathData_.Route;
   if (pathData_.PathToDepthFile.has_value() &&
       pathData_.ShipDraft.has_value()) {
-    grid = DepthGrid(pathData_.PathToDepthFile.value());
+    grid = entities::DepthGrid(pathData_.PathToDepthFile.value());
   }
   std::vector<std::pair<int, Point> > pathPoints;
 
@@ -107,14 +107,12 @@ std::optional<entities::Diagnostic> CheckPathCase::DoCrossDetect() const {
 
     auto it = forecast_by_point.find(id);
 
-    printf("Point: %u %f %f %d %d\n", i, p.Lat, p.Lon, grid.has_value(),
-           it != forecast_by_point.end());
+    wxLogInfo(_T("Point: %lu %f %f %d %d"), i, p.Lat, p.Lon, grid.has_value(), it != forecast_by_point.end());
 
     if (pathData_.MaxWaveHeight.has_value() && it != forecast_by_point.end()) {
       if (it->second >= pathData_.MaxWaveHeight) {
-        printf("Max wave dected\n");
         return entities::CreateHighWavesDiagnostic(
-            p, dbClient_->GetForecastLocation(forecastIdByPoint[id]),
+            p, dbClient_->SelectForecastLocation(forecastIdByPoint[id]),
             it->second, "esimo.ru", std::time(0));
       }
     }

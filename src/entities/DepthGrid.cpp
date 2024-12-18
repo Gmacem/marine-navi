@@ -1,6 +1,6 @@
 #include "DepthGrid.h"
 
-namespace MarineNavi {
+namespace marine_navi::entities {
 
 namespace {
 template <typename T>
@@ -72,4 +72,4 @@ std::optional<Utils::Point> DepthGrid::GetNearest(double lat,
   return Utils::Point{r * cellSize_ + minLat_, c * cellSize_ + minLon_};
 }
 
-}  // namespace MarineNavi
+}  // namespace marine_navi::entities

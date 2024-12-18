@@ -1,7 +1,7 @@
 
 #include "Diagnostic.h"
 
-namespace MarineNavi::entities {
+namespace marine_navi::entities {
 
 namespace {
 std::string ToString(Diagnostic::ReasonType reason) {
@@ -64,4 +64,4 @@ std::string GetDiagnosticMessage(const Diagnostic& diagnostic) {
   return ss.str();
 }
 
-}  // namespace MarineNavi::entities
+}  // namespace marine_navi::entities

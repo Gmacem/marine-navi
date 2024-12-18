@@ -1,14 +1,20 @@
 #include "Esimo.h"
 
-#include "common/Utils.h"
-
 #include <chrono>
 #include <filesystem>
 #include <fstream>
 
-namespace MarineNavi {
+#include <wx/log.h>
+
+#include "common/Utils.h"
+
+namespace marine_navi::clients {
 namespace {
 namespace fs = std::filesystem;
+
+using Forecast = marine_navi::entities::Forecast;
+using ForecastRecord = marine_navi::entities::ForecastRecord;
+using ForecastsSource = marine_navi::entities::ForecastsSource;
 
 std::string BuildUrl() { return "http://esimo.ru/dataview/getresourceexport"; }
 
@@ -47,8 +53,8 @@ int PushRow(void* params, int column_cnt, const char** columnValues) {
   } catch (const std::exception& ex) {
     fprintf(stderr, "Failed to parse forecast record with reason: %s\n",
             ex.what());
-    fprintf(stderr,
-            "Values:\n\t2: %d %s\n\t3: %d %s\n\t6: %d %s\n\t10: %d %s\n",
+    wxLogError(
+            _T("Values:\n\t2: %ld %s\n\t3: %ld %s\n\t6: %ld %s\n\t10: %ld %s"),
             strlen(columnValues[2]), columnValues[2], strlen(columnValues[3]),
             columnValues[3], strlen(columnValues[6]), columnValues[6],
             strlen(columnValues[10]), columnValues[10]);
@@ -118,4 +124,4 @@ wxString EsimoProvider::SaveData(const std::string& data) {
   return savePath;
 }
 
-}  // namespace MarineNavi
+}  // namespace marine_navi::clients

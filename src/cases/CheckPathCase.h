@@ -1,15 +1,18 @@
 #pragma once
 
-#include "clients/DbClient.h"
-#include "common/Utils.h"
-#include "entities/DepthGrid.h"
-
-#include <ocpn_plugin.h>
-
-#include <wx/wx.h>
 
 #include <mutex>
 #include <optional>
+
+#include <wx/wx.h>
+
+#include <ocpn_plugin.h>
+
+#include <clients/DbClient.h>
+#include <common/Utils.h>
+#include <entities/DepthGrid.h>
+#include <entities/Diagnostic.h>
+#include <entities/Route.h>
 
 namespace marine_navi::cases {
 
@@ -26,14 +29,14 @@ class CheckPathCase {
   using Point = Utils::Point;
 
 public:
-  CheckPathCase(std::shared_ptr<MarineNavi::DbClient> dbClient);
+  CheckPathCase(std::shared_ptr<clients::DbClient> dbClient);
   void SetPathData(const PathData& pathData);
   const PathData& GetPathData();
   void SetShow(bool show);
   bool IsShow();
 
   bool CheckLandIntersection(const Point& p1, const Point& p2) const;
-  bool CheckDepth(const DepthGrid& grid, const Point& p, double draft) const;
+  bool CheckDepth(const entities::DepthGrid& grid, const Point& p, double draft) const;
   void CrossDetect();
 
   std::optional<entities::Diagnostic> GetDiagnostic();
@@ -45,7 +48,7 @@ private:
   std::mutex mutex_;
   PathData pathData_;
   bool show_;
-  std::shared_ptr<MarineNavi::DbClient> dbClient_;
+  std::shared_ptr<clients::DbClient> dbClient_;
   std::optional<entities::Diagnostic> diagnostic_;
 };
 

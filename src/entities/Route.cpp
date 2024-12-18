@@ -1,6 +1,6 @@
 #include "Route.h"
 
-namespace MarineNavi::entities {
+namespace marine_navi::entities {
 
 double Route::GetDistance() const {
   double dist = 0;
@@ -25,4 +25,4 @@ Utils::Point Route::GetPointFromStart(double len) {
   return points_.back();
 }
 
-}  // namespace MarineNavi::entities
+}  // namespace marine_navi::entities

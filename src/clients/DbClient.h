@@ -24,11 +24,13 @@ public:
   void InsertForecastRecordBatch(const std::vector<entities::ForecastRecord>& records,
                                  int64_t forecastId);
 
-  std::vector<std::tuple<int, std::optional<double>, std::optional<double>>>
+  std::vector<std::tuple<int, int, std::optional<double>, std::optional<double>>>
   SelectNearestForecasts(
       const std::vector<std::pair<int, marine_navi::Utils::Point>>&
           points_with_id,
       const std::string& date);
+
+  Utils::Point SelectForecastLocation(int forecast_id);
 
 private:
   int64_t InsertQuery(std::string query);

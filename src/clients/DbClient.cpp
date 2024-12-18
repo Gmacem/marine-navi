@@ -67,7 +67,7 @@ int64_t DbClient::InsertQuery(std::string query) {
   }
 }
 
-std::vector<std::tuple<int, std::optional<double>, std::optional<double>>>
+std::vector<std::tuple<int, int, std::optional<double>, std::optional<double>>>
 DbClient::SelectNearestForecasts(
     const std::vector<std::pair<int, marine_navi::Utils::Point>>& points_with_id,
     const std::string& date) {
@@ -87,9 +87,10 @@ DbClient::SelectNearestForecasts(
   
   SQLite::Statement st(*db_, query);
 
-  std::vector<std::tuple<int, std::optional<double>, std::optional<double>>> result;
+  std::vector<std::tuple<int, int, std::optional<double>, std::optional<double>>> result;
 
   while (st.executeStep()) {
+    int forecast_id = st.getColumn(2).getInt();
     int id = st.getColumn(3).getInt();
     auto wave_column = st.getColumn(4);
     auto swell_columm = st.getColumn(5);
@@ -102,9 +103,24 @@ DbClient::SelectNearestForecasts(
     if (!swell_columm.isNull()) {
       swell_height = swell_columm.getDouble();
     }
-    result.emplace_back(id, wave_height, swell_height);
+    result.emplace_back(forecast_id, id, wave_height, swell_height);
   }
   return result;
+}
+
+Utils::Point DbClient::SelectForecastLocation(int forecast_id) {
+  const std::string kQueryName = "kSelectForecastLocation";
+  const auto& query_template = query_storage_->GetTemplate(kQueryName);
+
+  const auto query = query_template.MakeQuery(query_builder::ComposeArguments(forecast_id));
+
+  SQLite::Statement st(*db_, query);
+
+  if (st.executeStep()) {
+    return Utils::Point{st.getColumn(0).getDouble(), st.getColumn(1).getDouble()};
+  }
+  wxLogError(_T("Failed to select forecast location '%d'"), forecast_id);
+  return Utils::Point{};
 }
 
 std::shared_ptr<SQLite::Database> CreateDatabase(std::string db_name, std::shared_ptr<query_builder::SqlQueryStorage> query_storage) {

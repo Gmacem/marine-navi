@@ -7,7 +7,7 @@
 #include <optional>
 #include <vector>
 
-namespace marine_navi {
+namespace marine_navi::entities {
 
 class DepthGrid {
 public:
@@ -31,4 +31,4 @@ private:
   double maxLon_;
 };
 
-}  // namespace marine_navi
+}  // namespace marine_navi::entities

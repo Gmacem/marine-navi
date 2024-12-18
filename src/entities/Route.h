@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace MarineNavi::entities {
+namespace marine_navi::entities {
 
 class Route {
 public:
@@ -26,4 +26,4 @@ private:
   std::vector<PlugIn_Waypoint> route_;
 };
 
-}  // namespace MarineNavi::entities
+}  // namespace marine_navi::entities

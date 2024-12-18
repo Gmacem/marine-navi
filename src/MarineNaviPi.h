@@ -103,7 +103,7 @@ public:
 private:
   marine_navi::Dependencies deps_;
   wxWindow *parentWindow_;
-  std::shared_ptr<marine_navi::MarineNaviMainDlg> dlg_;
+  std::shared_ptr<marine_navi::dialogs::MarineNaviMainDlg> dlg_;
   std::shared_ptr<marine_navi::RenderOverlay> renderOverlay_;
 
   int toolId_;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <ctime>
 #include <memory>
 #include <stdexcept>
@@ -14,6 +15,7 @@ struct Point {
   double& Y();
   const double& X() const;
   const double& Y() const;
+  inline double Length() const { return sqrt(X() * X() + Y() * Y()); }
 
   double Lat;
   double Lon;
@@ -23,6 +25,10 @@ Point operator+(const Point& lhs, const Point& rhs);
 Point operator-(const Point& lhs, const Point& rhs);
 Point operator*(const Point& p, double x);
 Point operator*(double x, const Point& p);
+
+inline double GetDistance(const Point& lhs, const Point& rhs) {
+  return (lhs-rhs).Length();
+}
 
 time_t ParseDate(const std::string& repr,
                  const std::string& format = "%Y-%m-%d %H:%M:%S");

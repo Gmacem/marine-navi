@@ -14,7 +14,7 @@
 
 #include <memory>
 
-namespace MarineNavi::dialogs {
+namespace marine_navi::dialogs {
 
 namespace {
 
@@ -333,4 +333,4 @@ void MarineNaviMainDlg::UpdateDiagnostic(
   diagnosticPanel_->UpdateDiagnostic(diagnostic);
 }
 
-}  // namespace MarineNavi::dialogs
+}  // namespace marine_navi::dialogs
