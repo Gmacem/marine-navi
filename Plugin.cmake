@@ -31,7 +31,7 @@ set(OCPN_RELEASE_REPO
 #
 # -------  Plugin setup --------
 #
-set(PKG_NAME ShipDriver_pi)
+set(PKG_NAME MarineNavi_pi)
 set(PKG_VERSION  3.3.4)
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
@@ -47,49 +47,11 @@ data from itself. This can be replayed to simulate collision situations.
 
 set(PKG_AUTHOR "Mike Rossiter")
 set(PKG_IS_OPEN_SOURCE "yes")
-set(PKG_HOMEPAGE https://github.com/Rasbats/shipdriver_pi)
-set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/shipdriver.html)
+set(PKG_HOMEPAGE https://github.com/Gmacem/marine_navi)
 
-set(SRC
-    src/cases/CheckPathCase.cpp
-    src/cases/CheckPathCase.h
-    src/cases/ForecastsLoader.cpp
-    src/cases/ForecastsLoader.h
-
-    src/clients/DbClient.cpp
-    src/clients/DbClient.h
-    src/clients/Esimo.cpp
-    src/clients/Esimo.h
-    src/clients/ForecastsProvider.h
-
-    src/common/csv_parser.cpp
-    src/common/csv_parser.h
-    src/common/HttpClient.cpp
-    src/common/HttpClient.h
-    src/common/Utils.cpp
-    src/common/Utils.h
-
-    src/entities/DepthGrid.cpp
-    src/entities/DepthGrid.h
-    src/entities/Diagnostic.cpp
-    src/entities/Diagnostic.h
-    src/entities/Route.cpp
-    src/entities/Route.h
-    src/entities/Ship.h
-    src/entities/WeatherForecast.h
-    src/entities/WeatherGrid.h
-
-    src/dialogs/MainNotebook.cpp
-    src/dialogs/MainNotebook.h
-
-    src/Dependencies.cpp
-    src/Dependencies.h
-    src/icons.cpp
-    src/icons.h
-    src/MarineNaviPi.cpp
-    src/MarineNaviPi.h
-    src/RenderOverlay.cpp
-    src/RenderOverlay.h
+file(GLOB_RECURSE SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
 )
 
 include_directories(${CMAKE_PROJECT_NAME} PRIVATE src)

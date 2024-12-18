@@ -23,7 +23,7 @@
 
 #include "ocpn_plugin.h"  //Required for OCPN plugin functions
 
-#include "dialogs/MainNotebook.h"
+#include "dialogs/MainDialog.h"
 #include "RenderOverlay.h"
 
 #include "pidc.h"
@@ -101,10 +101,10 @@ public:
   wxBitmap panelBitmap_;
 
 private:
-  MarineNavi::Dependencies deps_;
+  marine_navi::Dependencies deps_;
   wxWindow *parentWindow_;
-  std::shared_ptr<MarineNavi::dialogs::MarineNaviMainDlg> dlg_;
-  std::shared_ptr<MarineNavi::RenderOverlay> renderOverlay_;
+  std::shared_ptr<marine_navi::MarineNaviMainDlg> dlg_;
+  std::shared_ptr<marine_navi::RenderOverlay> renderOverlay_;
 
   int toolId_;
   bool showDlg_;

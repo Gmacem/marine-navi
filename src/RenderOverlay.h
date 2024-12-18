@@ -7,7 +7,7 @@
 
 #include <wx/wx.h>
 
-namespace MarineNavi {
+namespace marine_navi {
 
 class RenderOverlay {
 public:
@@ -16,8 +16,7 @@ public:
   bool Render(piDC& dc, PlugIn_ViewPort* vp);
 
 private:
-  void RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp,
-                       const cases::PathData& pathData);
+  void RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp, const cases::PathData& pathData);
 
 private:
   std::shared_ptr<cases::CheckPathCase> checkPathCase_;
@@ -26,4 +25,4 @@ private:
   std::optional<wxPoint2DDouble> checkPathResult_;
 };
 
-}  // namespace MarineNavi
+}  // namespace marine_navi

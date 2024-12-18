@@ -1,11 +1,9 @@
 #include "CheckPathCase.h"
 
-namespace MarineNavi::cases {
+namespace marine_navi::cases {
 
-namespace {}  // namespace
-
-CheckPathCase::CheckPathCase(std::shared_ptr<MarineNavi::DbClient> dbClient)
-    : mutex_(), pathData_(), show_(false), dbClient_(dbClient) {}
+CheckPathCase::CheckPathCase(std::shared_ptr<marine_navi::clients::DbClient> db_client)
+    : mutex_(), pathData_(), show_(false), db_client_(db_client) {}
 
 void CheckPathCase::SetPathData(const PathData& pathData) {
   std::lock_guard lock(mutex_);
@@ -54,9 +52,9 @@ bool CheckPathCase::CheckDepth(const DepthGrid& grid, const Point& p,
   return true;
 }
 
-std::optional<entities::Diagnostic> CheckPathCase::GetDiagnostic() {
+std::optional<wxPoint2DDouble> CheckPathCase::GetLastResult() {
   std::lock_guard lock(mutex_);
-  return diagnostic_;
+  return lastResult_;
 }
 
 void CheckPathCase::CrossDetect() {
@@ -64,74 +62,66 @@ void CheckPathCase::CrossDetect() {
   fprintf(stderr, "Cross detect\n");
 
   try {
-    diagnostic_ = DoCrossDetect();
+    lastResult_ = CrossDetectImpl();
   } catch (std::exception& ex) {
     fprintf(stderr, "Failed detect impl %s\n", ex.what());
-    diagnostic_ = std::nullopt;  // TODO: signal about it
+    lastResult_ = std::nullopt;
   }
 }
 
-std::optional<entities::Diagnostic> CheckPathCase::DoCrossDetect() const {
+std::optional<wxPoint2DDouble> CheckPathCase::CrossDetectImpl() const {
   static constexpr int ITER_NUM = 50;
+  const Point start = pathData_.Start;
+  const Point end = pathData_.End;
   std::optional<DepthGrid> grid;
-  auto route = pathData_.Route;
   if (pathData_.PathToDepthFile.has_value() &&
       pathData_.ShipDraft.has_value()) {
     grid = DepthGrid(pathData_.PathToDepthFile.value());
   }
-  std::vector<std::pair<int, Point> > pathPoints;
 
-  double total = route->GetDistance();
+  Point vec = end - start;
+
+  std::vector<std::pair<int, Point> > pathPoints;
 
   for (int i = 0; i <= ITER_NUM; ++i) {
     double k = static_cast<double>(i) / ITER_NUM;
-    pathPoints.emplace_back(i, route->GetPointFromStart(k * total));
+    Point p = start + vec * k;
+    pathPoints.emplace_back(i, p);
   }
 
-  auto forecasts = dbClient_->SelectNearestForecasts(
+  auto forecasts = db_client_->SelectNearestForecasts(
       pathPoints, Utils::CurrentFormattedTime());
 
   std::unordered_map<int, double> forecast_by_point;
-  std::unordered_map<int, int> forecastIdByPoint;
-  for (auto& [forecastId, id, wave_height, swell_height] : forecasts) {
+  for (auto& [id, wave_height, swell_height] : forecasts) {
     if (!wave_height.has_value()) {
       continue;
     }
     double height = wave_height.value();
     height += swell_height.has_value() ? swell_height.value() : 0;
     forecast_by_point[id] = height;
-    forecastIdByPoint[id] = forecastId;
   }
 
   for (size_t i = 0; i < pathPoints.size(); ++i) {
     auto& p = pathPoints[i].second;
-    int id = pathPoints[i].first;
 
-    auto it = forecast_by_point.find(id);
-
-    printf("Point: %u %f %f %d %d\n", i, p.Lat, p.Lon, grid.has_value(),
-           it != forecast_by_point.end());
-
+    auto it = forecast_by_point.find(pathPoints[i].first);
     if (pathData_.MaxWaveHeight.has_value() && it != forecast_by_point.end()) {
       if (it->second >= pathData_.MaxWaveHeight) {
-        printf("Max wave dected\n");
-        return entities::CreateHighWavesDiagnostic(
-            p, dbClient_->GetForecastLocation(forecastIdByPoint[id]),
-            it->second, "esimo.ru", std::time(0));
+        return wxPoint2DDouble(p.Lat, p.Lon);
       }
     }
 
     if (grid.has_value() &&
         !CheckDepth(grid.value(), p, pathData_.ShipDraft.value())) {
-      printf("Max depth dected\n");
-      return entities::CreateNotDeepDiagnostic(
-          p, grid->GetNearest(p.Lat, p.Lon).value(),
-          grid->GetDepth(p.Lat, p.Lon).value(), "gebco.net", std::time(0));
+      return wxPoint2DDouble(p.Lat, p.Lon);
+    }
+
+    if (CheckLandIntersection(pathData_.Start, p)) {
+      return wxPoint2DDouble(p.Lat, p.Lon);
     }
   }
-  printf("Cross not detected\n");
-
   return std::nullopt;
 }
 
-}  // namespace MarineNavi::cases
+}  // namespace marine_navi::cases

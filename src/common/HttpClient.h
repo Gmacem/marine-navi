@@ -2,7 +2,7 @@
 
 #include <wx/curl/http.h>
 
-namespace MarineNavi {
+namespace marine_navi {
 
 namespace Utils {
 
@@ -19,4 +19,4 @@ public:
 };
 
 }  // namespace Utils
-}  // namespace MarineNavi
+}  // namespace marine_navi

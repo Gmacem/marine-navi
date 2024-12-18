@@ -8,24 +8,31 @@ namespace SQLite {
 class Database;
 }
 
-namespace MarineNavi {
+namespace marine_navi {
 namespace cases {
 class CheckPathCase;
 class ForecastsLoader;
-}  // namespace cases
+} // namespace cases
 
+namespace clients {
 class DbClient;
+namespace query_builder {
+class SqlQueryStorage;
+} // namespace query_builder
+} // namespace clients
+
 class RenderOverlay;
 
 struct Dependencies {
-  std::shared_ptr<MarineNavi::cases::CheckPathCase> CheckPathCase;
-  std::shared_ptr<MarineNavi::cases::ForecastsLoader> ForecastsLoader;
-  std::shared_ptr<MarineNavi::RenderOverlay> RenderOverlay;
+  std::shared_ptr<cases::CheckPathCase> CheckPathCase;
+  std::shared_ptr<cases::ForecastsLoader> ForecastsLoader;
+  std::shared_ptr<marine_navi::RenderOverlay> RenderOverlay;
   std::shared_ptr<SQLite::Database> Db;
-  std::shared_ptr<MarineNavi::DbClient> DbClient;
+  std::shared_ptr<clients::query_builder::SqlQueryStorage> SqlQueryStorage;
+  std::shared_ptr<clients::DbClient> DbClient;
   wxWindow* OcpnCanvasWindow;
 };
 
 Dependencies CreateDependencies(wxWindow* OcpnCanvasWindow);
 
-}  // namespace MarineNavi
+}  // namespace marine_navi

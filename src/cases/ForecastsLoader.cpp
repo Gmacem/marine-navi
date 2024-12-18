@@ -1,9 +1,11 @@
 #include "ForecastsLoader.h"
 
+#include <wx/log.h>
+
 #include "clients/Esimo.h"
 #include "common/Utils.h"
 
-namespace MarineNavi::cases {
+namespace marine_navi::cases {
 namespace {
 
 using namespace std::chrono_literals;
@@ -11,9 +13,9 @@ const std::string kBlackSea = "RU_Hydrometcentre_69";
 
 }  // namespace
 
-ForecastsLoader::ForecastsLoader(std::shared_ptr<DbClient> dbClient)
-    : dbClient_(dbClient),
-      forecastsProvider_(std::make_shared<EsimoProvider>(kBlackSea)) {}
+ForecastsLoader::ForecastsLoader(std::shared_ptr<clients::DbClient> dbClient)
+    : db_client_(dbClient),
+      forecastsProvider_(std::make_shared<clients::EsimoProvider>(kBlackSea)) {}
 
 void ForecastsLoader::Load() {
   if (loadThread_.joinable()) {
@@ -24,14 +26,15 @@ void ForecastsLoader::Load() {
   }
 
   std::packaged_task<void()> task([this] {
-    fprintf(stderr, "Start esimo loading task\n");
+    wxLogInfo(_T("Start esimo loading task"));
     forecastsProvider_->LoadForecasts();
     auto forecast = forecastsProvider_->GetForecast();
     auto records = forecastsProvider_->GetRecords();
 
-    int64_t forecastId = dbClient_->InsertForecast(forecast.Source);
-    dbClient_->InsertForecastRecords(records, forecastId);
-    fprintf(stderr, "Finish esimo loading task\n");
+    int64_t forecastId = db_client_->InsertForecast(forecast.Source);
+    db_client_->InsertForecastRecordBatch(records, forecastId);
+
+    wxLogInfo(_T("Finish esimo loading task\n"));
   });
   future_ = task.get_future();
   loadThread_ = std::thread(std::move(task));
@@ -43,4 +46,4 @@ ForecastsLoader::~ForecastsLoader() {
   }
 }
 
-}  // namespace MarineNavi::cases
+}  // namespace marine_navi::cases

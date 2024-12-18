@@ -3,7 +3,7 @@
 #include <string>
 #include <optional>
 
-namespace MarineNavi {
+namespace marine_navi::entities {
 
 enum class ForecastsSource {
   kEsimo = 0,
@@ -24,4 +24,4 @@ struct ForecastRecord {
   std::optional<double> SwellHeight;
 };
 
-}  // namespace MarineNavi
+}  // namespace marine_navi::entities

@@ -9,7 +9,7 @@
 #include <string>
 
 
-namespace MarineNavi {
+namespace marine_navi {
 
 
 struct WeatherForecastData {
@@ -50,5 +50,5 @@ public:
 };
 
 
-} // namespace MarineNavi
+} // namespace marine_navi
 */

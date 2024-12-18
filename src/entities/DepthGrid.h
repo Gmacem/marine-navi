@@ -1,20 +1,17 @@
 #pragma once
 
-#include "common/Utils.h"
-
 #include <filesystem>
 #include <fstream>
 #include <optional>
 #include <vector>
 
-namespace MarineNavi {
+namespace marine_navi {
 
 class DepthGrid {
 public:
   DepthGrid(std::string filepath);
 
-  std::optional<double> GetDepth(double lat, double lon) const;
-  std::optional<Utils::Point> GetNearest(double lat, double lon) const;
+  std::optional<double> GetDepth(const double lat, double lon) const;
 
 private:
   uint32_t nCols_;
@@ -31,4 +28,4 @@ private:
   double maxLon_;
 };
 
-}  // namespace MarineNavi
+}  // namespace marine_navi

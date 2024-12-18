@@ -13,16 +13,16 @@
 #include <string>
 #include <vector>
 
-namespace MarineNavi {
+namespace marine_navi::clients {
 
-class EsimoProvider : public IForecastsProvider {
+class EsimoProvider : public clients::IForecastsProvider {
 public:
   EsimoProvider(const std::string& resourceId,
                 std::optional<std::string> filter = std::nullopt);
 
   void LoadForecasts() override;
-  Forecast GetForecast() override;
-  std::vector<ForecastRecord> GetRecords() override;
+  entities::Forecast GetForecast() override;
+  std::vector<entities::ForecastRecord> GetRecords() override;
   ~EsimoProvider() override = default;
 
 private:
@@ -36,7 +36,7 @@ private:
   std::string url;
   std::string responseBody_;
 
-  std::vector<ForecastRecord> records_;
+  std::vector<entities::ForecastRecord> records_;
 };
 
-}  // namespace MarineNavi
+}  // namespace marine_navi::clients

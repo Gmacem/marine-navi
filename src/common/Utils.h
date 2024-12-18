@@ -1,38 +1,28 @@
 #pragma once
 
-#include <cmath>
 #include <ctime>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <time.h>
 
-namespace MarineNavi::Utils {
+namespace marine_navi {
+namespace Utils {
 
 struct Point {
-  inline double& X() { return Lon; }
-  inline double& Y() { return Lat; }
-  inline const double& X() const { return Lon; }
-  inline const double& Y() const { return Lat; }
-  inline double Length() const { return sqrt(Lat * Lat + Lon * Lon); }
+  double& X();
+  double& Y();
+  const double& X() const;
+  const double& Y() const;
+
   double Lat;
   double Lon;
 };
 
-inline Point operator+(const Point& lhs, const Point& rhs) {
-  return Point{lhs.Lat + rhs.Lat, lhs.Lon + rhs.Lon};
-}
-inline Point operator-(const Point& lhs, const Point& rhs) {
-  return Point{lhs.Lat - rhs.Lat, lhs.Lon - rhs.Lon};
-}
-inline Point operator*(const Point& p, double x) {
-  return Point{p.Lat * x, p.Lon * x};
-}
-inline Point operator*(double x, const Point& p) { return p * x; }
-
-inline double GetDistance(const Point& lhs, const Point& rhs) {
-  return (rhs - lhs).Length();
-}
+Point operator+(const Point& lhs, const Point& rhs);
+Point operator-(const Point& lhs, const Point& rhs);
+Point operator*(const Point& p, double x);
+Point operator*(double x, const Point& p);
 
 time_t ParseDate(const std::string& repr,
                  const std::string& format = "%Y-%m-%d %H:%M:%S");
@@ -54,4 +44,5 @@ std::string StringFormat(const std::string& format, Args... args) {
 std::string CurrentFormattedTime(
     const std::string& format = "%Y-%m-%d %H:%M:%S");
 
-}  // namespace MarineNavi::Utils
+}  // namespace Utils
+}  // namespace marine_navi

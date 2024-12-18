@@ -6,9 +6,13 @@
 #include <filesystem>
 #include <fstream>
 
-namespace MarineNavi {
+namespace marine_navi::clients {
 namespace {
 namespace fs = std::filesystem;
+
+using Forecast = entities::Forecast;
+using ForecastRecord = entities::ForecastRecord;
+using ForecastsSource = entities::ForecastsSource;
 
 std::string BuildUrl() { return "http://esimo.ru/dataview/getresourceexport"; }
 
@@ -118,4 +122,4 @@ wxString EsimoProvider::SaveData(const std::string& data) {
   return savePath;
 }
 
-}  // namespace MarineNavi
+}  // namespace marine_navi::clients

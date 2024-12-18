@@ -6,21 +6,21 @@
 #include <future>
 #include <thread>
 
-namespace MarineNavi::cases {
+namespace marine_navi::cases {
 
 class ForecastsLoader {
 public:
-  ForecastsLoader(std::shared_ptr<DbClient> dbClient);
+  ForecastsLoader(std::shared_ptr<clients::DbClient> dbClient);
 
   void Load();  // TODO: load from different regions
 
   ~ForecastsLoader();
 
 private:
-  std::shared_ptr<DbClient> dbClient_;
-  std::shared_ptr<IForecastsProvider> forecastsProvider_;
+  std::shared_ptr<clients::DbClient> db_client_;
+  std::shared_ptr<clients::IForecastsProvider> forecastsProvider_;
 
   std::thread loadThread_;
   std::future<void> future_;
 };
-}  // namespace MarineNavi::cases
+}  // namespace marine_navi::cases

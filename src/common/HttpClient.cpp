@@ -1,6 +1,6 @@
 #include "HttpClient.h"
 
-namespace MarineNavi {
+namespace marine_navi {
 
 namespace Utils {
 
@@ -14,4 +14,4 @@ void HttpClient::AddHeader(const std::string& value) {
 }
 
 }  // namespace Utils
-}  // namespace MarineNavi
+}  // namespace marine_navi

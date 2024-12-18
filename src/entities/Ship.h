@@ -1,8 +1,8 @@
 #pragma once 
 
-namespace MarineNavi {
+namespace marine_navi {
 
 class Ship {
 };
 
-} // namespace MarineNavi
+} // namespace marine_navi
