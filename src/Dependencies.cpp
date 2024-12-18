@@ -31,7 +31,7 @@ Dependencies CreateDependencies(wxWindow* ocpnCanvasWindow) {
   deps.OcpnCanvasWindow = ocpnCanvasWindow;
   deps.SqlQueryStorage = MakeSqlQueryStorage();
   deps.Db = clients::CreateDatabase("marinenavi.db", deps.SqlQueryStorage);
-  deps.DbClient = std::make_shared<clients::DbClient>(deps.Db);
+  deps.DbClient = std::make_shared<clients::DbClient>(deps.Db, deps.SqlQueryStorage);
   deps.ForecastsLoader =
       std::make_shared<cases::ForecastsLoader>(deps.DbClient);
   deps.CheckPathCase =

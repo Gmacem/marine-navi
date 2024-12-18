@@ -18,7 +18,8 @@ using SqlQueryStorage = query_builder::SqlQueryStorage;
 
 class DbClient {
 public:
-  DbClient(std::shared_ptr<SQLite::Database> db) : db_(db) {}
+  DbClient(std::shared_ptr<SQLite::Database> db, std::shared_ptr<SqlQueryStorage> query_storage) 
+    : db_(db), query_storage_(query_storage) {}
 
   int64_t InsertForecast(entities::ForecastsSource source);
   void InsertForecastRecordBatch(const std::vector<entities::ForecastRecord>& records,
@@ -36,8 +37,8 @@ private:
   int64_t InsertQuery(std::string query);
 
 private:
-  std::shared_ptr<SqlQueryStorage> query_storage_;
   std::shared_ptr<SQLite::Database> db_;
+  std::shared_ptr<SqlQueryStorage> query_storage_;
 };
 
 std::shared_ptr<SQLite::Database> CreateDatabase(std::string db_name, std::shared_ptr<SqlQueryStorage> query_storage);
