@@ -29,11 +29,14 @@ inline wxString GetForecastDirPath() {
 }
 
 int PushRow(void* params, int column_cnt, const char** columnValues) {
-  auto* records = static_cast<std::vector<ForecastRecord>*>(params);
   if (column_cnt < 12) {
-    fprintf(stderr, "Failed to parse esimo records");
+    wxLogWarning(
+        _T("Esimo send broken csv with column count < 12, column count: %d"),
+        column_cnt);
     return 1;
   }
+
+  auto* records = static_cast<std::vector<ForecastRecord>*>(params);
   if (columnValues[0] == std::string("Дата и время: начало(минимум)")) {
     return 0;
   }
@@ -51,13 +54,13 @@ int PushRow(void* params, int column_cnt, const char** columnValues) {
                            : std::optional<double>(std::stod(columnValues[10])),
     });
   } catch (const std::exception& ex) {
-    fprintf(stderr, "Failed to parse forecast record with reason: %s\n",
-            ex.what());
+    wxLogError(_T("Failed to parse forecast record with reason: %s"),
+               ex.what());
     wxLogError(
-            _T("Values:\n\t2: %ld %s\n\t3: %ld %s\n\t6: %ld %s\n\t10: %ld %s"),
-            strlen(columnValues[2]), columnValues[2], strlen(columnValues[3]),
-            columnValues[3], strlen(columnValues[6]), columnValues[6],
-            strlen(columnValues[10]), columnValues[10]);
+        _T("Values:\n\t2: %ld %s\n\t3: %ld %s\n\t6: %ld %s\n\t10: %ld %s"),
+        strlen(columnValues[2]), columnValues[2], strlen(columnValues[3]),
+        columnValues[3], strlen(columnValues[6]), columnValues[6],
+        strlen(columnValues[10]), columnValues[10]);
   }
   return 0;
 }
@@ -82,7 +85,7 @@ void EsimoProvider::LoadForecasts() {
   auto path = SaveData(responseBody_);
 
   auto pFile = fopen(path.c_str(), "r");
-  int r = csv_parse(pFile, PushRow, (void*)(&records_));
+  int r = csv_parse(pFile, PushRow, (void*)(&records_), 1);
   fclose(pFile);
   if (r != 0) {
     fprintf(stderr, "Failed to parse esimo forecast");

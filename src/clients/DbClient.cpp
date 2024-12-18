@@ -19,17 +19,20 @@ using ComposedArgVar = clients::query_builder::ComposedArgVar;
 
 }  // namespace
 
-int64_t DbClient::InsertForecast(marine_navi::entities::ForecastsSource source) {
+int64_t DbClient::InsertForecast(
+    marine_navi::entities::ForecastsSource source) {
   const std::string kQueryName = "kInsertForecast";
   const auto& query_template = query_storage_->GetTemplate(kQueryName);
 
-  const auto query = query_template.MakeQuery(query_builder::ComposeArguments(source));
+  const auto query =
+      query_template.MakeQuery(query_builder::ComposeArguments(source));
 
   return InsertQuery(query);
 }
 
-void DbClient::InsertForecastRecordBatch(const std::vector<marine_navi::entities::ForecastRecord>& records,
-                                         int64_t forecastId) {
+void DbClient::InsertForecastRecordBatch(
+    const std::vector<marine_navi::entities::ForecastRecord>& records,
+    int64_t forecastId) {
   static constexpr int BATCH_SIZE = 512;
   const std::string kQueryName = "kInserForecastRecordBatchQuery";
   const auto& query_template = query_storage_->GetTemplate(kQueryName);
@@ -37,20 +40,21 @@ void DbClient::InsertForecastRecordBatch(const std::vector<marine_navi::entities
   SQLite::Transaction trans(*db_);
   for (size_t i = 0; i < records.size(); i += BATCH_SIZE) {
     size_t bound = std::min(i + BATCH_SIZE, records.size());
-    std::vector<ComposedArgVar> outer;
+    std::vector<std::vector<SingleArgVar>> outer;
+    outer.reserve(bound - i);
     for (size_t j = i; j < bound; ++j) {
-      std::vector<SingleArgVar> inner{
-        BaseArgVar{records[j].StartedAt},
-        BaseArgVar{records[j].Date},
-        BaseArgVar{records[j].Lat},
-        BaseArgVar{records[j].Lon},
-        records[j].WaveHeight,
-        records[j].SwellHeight,
-        BaseArgVar{forecastId}
-      };
+      std::vector<SingleArgVar> inner{BaseArgVar{records[j].StartedAt},
+                                      BaseArgVar{records[j].Date},
+                                      BaseArgVar{records[j].Lat},
+                                      BaseArgVar{records[j].Lon},
+                                      records[j].WaveHeight,
+                                      records[j].SwellHeight,
+                                      BaseArgVar{forecastId}};
       outer.emplace_back(std::move(inner));
     }
-    db_->exec(query_template.MakeQuery(outer));
+    const auto query =
+        query_template.MakeQuery(query_builder::ComposeArguments(outer));
+    db_->exec(query);
     wxLogInfo(_T("Load progress: %lu/%lu"), bound, records.size());
   }
   trans.commit();
@@ -69,25 +73,27 @@ int64_t DbClient::InsertQuery(std::string query) {
 
 std::vector<std::tuple<int, int, std::optional<double>, std::optional<double>>>
 DbClient::SelectNearestForecasts(
-    const std::vector<std::pair<int, marine_navi::Utils::Point>>& points_with_id,
+    const std::vector<std::pair<int, marine_navi::Utils::Point>>&
+        points_with_id,
     const std::string& date) {
-
   const std::string kQueryName = "kSelectClosestForecasts";
   const auto& query_template = query_storage_->GetTemplate(kQueryName);
 
-  std::vector<std::vector<SingleArgVar> > points(points_with_id.size());
+  std::vector<std::vector<SingleArgVar>> points(points_with_id.size());
   for (size_t i = 0; i < points_with_id.size(); ++i) {
     const auto& [id, point] = points_with_id[i];
-    points[i] = std::vector<SingleArgVar>{
-      BaseArgVar{id}, BaseArgVar{point.X()}, BaseArgVar{point.Y()}
-    };
+    points[i] = std::vector<SingleArgVar>{BaseArgVar{id}, BaseArgVar{point.X()},
+                                          BaseArgVar{point.Y()}};
   }
 
-  const auto query = query_template.MakeQuery(query_builder::ComposeArguments(points, date));
-  
+  const auto query =
+      query_template.MakeQuery(query_builder::ComposeArguments(points, date));
+
   SQLite::Statement st(*db_, query);
 
-  std::vector<std::tuple<int, int, std::optional<double>, std::optional<double>>> result;
+  std::vector<
+      std::tuple<int, int, std::optional<double>, std::optional<double>>>
+      result;
 
   while (st.executeStep()) {
     int forecast_id = st.getColumn(2).getInt();
@@ -112,18 +118,22 @@ Utils::Point DbClient::SelectForecastLocation(int forecast_id) {
   const std::string kQueryName = "kSelectForecastLocation";
   const auto& query_template = query_storage_->GetTemplate(kQueryName);
 
-  const auto query = query_template.MakeQuery(query_builder::ComposeArguments(forecast_id));
+  const auto query =
+      query_template.MakeQuery(query_builder::ComposeArguments(forecast_id));
 
   SQLite::Statement st(*db_, query);
 
   if (st.executeStep()) {
-    return Utils::Point{st.getColumn(0).getDouble(), st.getColumn(1).getDouble()};
+    return Utils::Point{st.getColumn(0).getDouble(),
+                        st.getColumn(1).getDouble()};
   }
   wxLogError(_T("Failed to select forecast location '%d'"), forecast_id);
   return Utils::Point{};
 }
 
-std::shared_ptr<SQLite::Database> CreateDatabase(std::string db_name, std::shared_ptr<query_builder::SqlQueryStorage> query_storage) {
+std::shared_ptr<SQLite::Database> CreateDatabase(
+    std::string db_name,
+    std::shared_ptr<query_builder::SqlQueryStorage> query_storage) {
   const std::string kQueryName = "kCreateTables";
   const auto& query_template = query_storage->GetTemplate(kQueryName);
 
