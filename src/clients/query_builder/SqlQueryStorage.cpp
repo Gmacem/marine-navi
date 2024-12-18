@@ -113,7 +113,7 @@ std::string SqlTemplate::MakeQuery(const std::vector<ComposedArgVar>& args) cons
 std::string SqlTemplate::ParseName(const std::string& query) {
     std::string first_line = query.substr(0, query.find('\n'));
     assert(first_line.substr(0, 3) == "-- ");
-    return first_line.substr(3, first_line.size() - 4);
+    return first_line.substr(3, first_line.size() - 3);
 }
 
 std::vector<SqlTemplate::TokenType> SqlTemplate::ParseTokens(const std::string& query) {
