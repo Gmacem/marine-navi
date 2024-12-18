@@ -106,7 +106,7 @@ std::string SqlTemplate::MakeQuery(const std::vector<ComposedArgVar>& args) cons
         }
     }
     const std::string query = ss.str();
-    wxLogInfo(wxT("Make new query with name '%s' and value '%s'"), name_, query);
+    wxLogInfo(_T("Make new query with name '%s' and value '%s'"), name_, query);
     return query;
 }
 
@@ -149,7 +149,7 @@ std::vector<SqlTemplate::TokenType> SqlTemplate::ParseTokens(const std::string& 
 }
 
 const SqlTemplate& SqlQueryStorage::GetTemplate(const std::string& name) const {
-    wxLogTrace(wxT("Trying to get template for query '%s'"), name);
+    wxLogInfo(_T("Trying to get template for query '%s'"), name);
     return storage_.at(name);
 }
 
