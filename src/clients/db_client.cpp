@@ -1,4 +1,4 @@
-#include "DbClient.h"
+#include "db_client.h"
 
 #include "ocpn_plugin.h"
 

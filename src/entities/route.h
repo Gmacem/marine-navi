@@ -1,10 +1,10 @@
 #pragma once
 
-#include <common/Utils.h>
+#include <vector>
 
 #include <ocpn_plugin.h>
 
-#include <vector>
+#include "common/utils.h"
 
 namespace marine_navi::entities {
 

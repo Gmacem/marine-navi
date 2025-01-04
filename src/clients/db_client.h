@@ -6,11 +6,9 @@
 #include <SQLiteCpp/Database.h>
 #include <SQLiteCpp/Transaction.h>
 
-#include "entities/WeatherForecast.h"
-#include "common/Utils.h"
-
-#include "ForecastsProvider.h"
-#include "clients/query_builder/SqlQueryStorage.h"
+#include "clients/query_builder/sql_query_storage.h"
+#include "common/utils.h"
+#include "entities/weather_forecast.h"
 
 namespace marine_navi::clients {
 

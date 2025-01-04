@@ -3,8 +3,6 @@
 #ifndef _SDR_PI_H_
 #define _SDR_PI_H_
 
-#include "cases/CheckPathCase.h"
-
 #include <wx/wxprec.h>
 
 #ifndef WX_PRECOMP
@@ -23,10 +21,11 @@
 
 #include "ocpn_plugin.h"  //Required for OCPN plugin functions
 
-#include "dialogs/MainNotebook.h"
-#include "RenderOverlay.h"
-
 #include "pidc.h"
+
+#include "cases/marine_route_scanner.h"
+#include "dialogs/main_notebook.h"
+#include "render_overlay.h"
 
 // Define minimum and maximum versions of the grib plugin supported
 #define GRIB_MAX_MAJOR 4

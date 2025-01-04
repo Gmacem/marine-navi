@@ -1,9 +1,9 @@
-#include "ForecastsLoader.h"
+#include "forecasts_loader.h"
 
 #include <wx/log.h>
 
-#include "clients/Esimo.h"
-#include "common/Utils.h"
+#include "clients/esimo.h"
+#include "common/utils.h"
 
 namespace marine_navi::cases {
 namespace {

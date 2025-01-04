@@ -1,31 +1,31 @@
-#include "CheckPathCase.h"
+#include "marine_route_scanner.h"
 
 namespace marine_navi::cases {
 
-CheckPathCase::CheckPathCase(std::shared_ptr<clients::DbClient> dbClient)
+MarineRouteScanner::MarineRouteScanner(std::shared_ptr<clients::DbClient> dbClient)
     : mutex_(), pathData_(), show_(false), dbClient_(dbClient) {}
 
-void CheckPathCase::SetPathData(const PathData& pathData) {
+void MarineRouteScanner::SetPathData(const RouteData& pathData) {
   std::lock_guard lock(mutex_);
   pathData_ = pathData;
 }
 
-const PathData& CheckPathCase::GetPathData() {
+const RouteData& MarineRouteScanner::GetPathData() {
   std::lock_guard lock(mutex_);
   return pathData_;
 }
 
-void CheckPathCase::SetShow(bool show) {
+void MarineRouteScanner::SetShow(bool show) {
   std::lock_guard lock(mutex_);
   show_ = show;
 }
 
-bool CheckPathCase::IsShow() {
+bool MarineRouteScanner::IsShow() {
   std::lock_guard lock(mutex_);
   return show_;
 }
 
-bool CheckPathCase::CheckLandIntersection(const Point& p1,
+bool MarineRouteScanner::CheckLandIntersection(const Point& p1,
                                           const Point& p2) const {
   static constexpr double EPS = 1e-5;
 
@@ -40,7 +40,7 @@ bool CheckPathCase::CheckLandIntersection(const Point& p1,
                                   maxCorner.Lon);
 }
 
-bool CheckPathCase::CheckDepth(const entities::DepthGrid& grid, const Point& p,
+bool MarineRouteScanner::CheckDepth(const entities::DepthGrid& grid, const Point& p,
                                double draft) const {
   auto depth = grid.GetDepth(p.Lat, p.Lon);
 
@@ -52,12 +52,12 @@ bool CheckPathCase::CheckDepth(const entities::DepthGrid& grid, const Point& p,
   return true;
 }
 
-std::optional<entities::Diagnostic> CheckPathCase::GetDiagnostic() {
+std::optional<entities::RouteValidateDiagnostic> MarineRouteScanner::GetDiagnostic() {
   std::lock_guard lock(mutex_);
   return diagnostic_;
 }
 
-void CheckPathCase::CrossDetect() {
+void MarineRouteScanner::CrossDetect() {
   std::lock_guard lock(mutex_);
   fprintf(stderr, "Cross detect\n");
 
@@ -69,7 +69,7 @@ void CheckPathCase::CrossDetect() {
   }
 }
 
-std::optional<entities::Diagnostic> CheckPathCase::DoCrossDetect() const {
+std::optional<entities::RouteValidateDiagnostic> MarineRouteScanner::DoCrossDetect() const {
   static constexpr int ITER_NUM = 50;
   std::optional<entities::DepthGrid> grid;
   auto route = pathData_.Route;

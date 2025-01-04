@@ -1,4 +1,4 @@
-#include "Esimo.h"
+#include "esimo.h"
 
 #include <chrono>
 #include <filesystem>
@@ -6,7 +6,7 @@
 
 #include <wx/log.h>
 
-#include "common/Utils.h"
+#include "common/utils.h"
 
 namespace marine_navi::clients {
 namespace {

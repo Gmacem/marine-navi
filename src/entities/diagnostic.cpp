@@ -1,15 +1,15 @@
 
-#include "Diagnostic.h"
+#include "diagnostic.h"
 
 namespace marine_navi::entities {
 
 namespace {
-std::string ToString(Diagnostic::ReasonType reason) {
+std::string ToString(RouteValidateDiagnostic::ReasonType reason) {
   switch (reason) {
-    case Diagnostic::ReasonType::kHighWaves: {
+    case RouteValidateDiagnostic::ReasonType::kHighWaves: {
       return "High waves";
     }
-    case Diagnostic::ReasonType::kNotDeep: {
+    case RouteValidateDiagnostic::ReasonType::kNotDeep: {
       return "Not deep enough";
     }
     default: {
@@ -19,7 +19,7 @@ std::string ToString(Diagnostic::ReasonType reason) {
 }
 }  // namespace
 
-Diagnostic CreateHighWavesDiagnostic(Utils::Point location,
+RouteValidateDiagnostic CreateHighWavesDiagnostic(Utils::Point location,
                                      Utils::Point nearest, double expectedHigh,
                                      std::string source,
                                      time_t expectedTimeOfTroubles) {
@@ -27,9 +27,9 @@ Diagnostic CreateHighWavesDiagnostic(Utils::Point location,
   description << "Nearest forecast point: " << nearest.Lat << " " << nearest.Lon
               << '\n'
               << "\tExpected high: " << expectedHigh << '\n';
-  return Diagnostic{
+  return RouteValidateDiagnostic{
       .Location = location,
-      .Type = Diagnostic::ReasonType::kHighWaves,
+      .Type = RouteValidateDiagnostic::ReasonType::kHighWaves,
       .Description = description.str(),
       .Source = source,
       .CheckTime = std::time(0),
@@ -37,16 +37,16 @@ Diagnostic CreateHighWavesDiagnostic(Utils::Point location,
   };
 }
 
-Diagnostic CreateNotDeepDiagnostic(Utils::Point location, Utils::Point nearest,
+RouteValidateDiagnostic CreateNotDeepDiagnostic(Utils::Point location, Utils::Point nearest,
                                    double depth, std::string source,
                                    time_t expectedTimeOfTroubles) {
   std::stringstream description;
   description << "Nearest depth point: " << nearest.Lat << " " << nearest.Lon
               << '\n'
               << "\tDepth: " << depth << '\n';
-  return Diagnostic{
+  return RouteValidateDiagnostic{
       .Location = location,
-      .Type = Diagnostic::ReasonType::kNotDeep,
+      .Type = RouteValidateDiagnostic::ReasonType::kNotDeep,
       .Description = description.str(),
       .Source = source,
       .CheckTime = std::time(0),
@@ -54,7 +54,7 @@ Diagnostic CreateNotDeepDiagnostic(Utils::Point location, Utils::Point nearest,
   };
 }
 
-std::string GetDiagnosticMessage(const Diagnostic& diagnostic) {
+std::string GetDiagnosticMessage(const RouteValidateDiagnostic& diagnostic) {
   std::stringstream ss;
   ss << "Possible problems at the point: " << diagnostic.Location.Lat << " "
      << diagnostic.Location.Lon << '\n';

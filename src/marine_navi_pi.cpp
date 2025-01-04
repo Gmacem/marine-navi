@@ -1,4 +1,4 @@
-#include "MarineNaviPi.h"
+#include "marine_navi_pi.h"
 
 #include "wx/wx.h"
 #include <wx/fileconf.h>
@@ -73,7 +73,7 @@ MarineNaviPi::MarineNaviPi(void* ppimgr)
       deps_(marine_navi::CreateDependencies(nullptr)),
       parentWindow_(nullptr),
       dlg_(nullptr),
-      renderOverlay_(deps_.RenderOverlay),
+      renderOverlay_(deps_.render_overlay),
       toolId_(-1),
       showDlg_(false) {
   // Create the PlugIn icons

@@ -1,9 +1,9 @@
-#include "RenderOverlay.h"
+#include "render_overlay.h"
 
 namespace marine_navi {
 
 RenderOverlay::RenderOverlay(Dependencies& deps)
-    : checkPathCase_(deps.CheckPathCase) {}
+    : checkPathCase_(deps.marine_route_scanner) {}
 
 bool RenderOverlay::Render(piDC& dc, PlugIn_ViewPort* vp) {
   if (checkPathCase_->IsShow()) {
@@ -15,7 +15,7 @@ bool RenderOverlay::Render(piDC& dc, PlugIn_ViewPort* vp) {
 }
 
 void RenderOverlay::RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp,
-                                    const cases::PathData& pathData) {
+                                    const cases::RouteData& pathData) {
   dc.SetPen(*wxBLACK);                // reset pen
   dc.SetBrush(*wxTRANSPARENT_BRUSH);  // reset brush
   dc.SetPen(wxPen(wxColor(0, 0, 0)));

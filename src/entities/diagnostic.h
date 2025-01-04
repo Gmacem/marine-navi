@@ -1,13 +1,13 @@
 #pragma once
 
-#include <common/Utils.h>
-
 #include <ctime>
 #include <sstream>
 
+#include "common/utils.h"
+
 namespace marine_navi::entities {
 
-struct Diagnostic {
+struct RouteValidateDiagnostic {
   enum class ReasonType {
     kNotDeep,
     kHighWaves,
@@ -21,13 +21,13 @@ struct Diagnostic {
   time_t ExpectedTimeOfTroubles;
 };
 
-Diagnostic CreateHighWavesDiagnostic(Utils::Point location,
+RouteValidateDiagnostic CreateHighWavesDiagnostic(Utils::Point location,
                                      Utils::Point nearest, double expectedHigh,
                                      std::string source,
                                      time_t expectedTimeOfTroubles);
-Diagnostic CreateNotDeepDiagnostic(Utils::Point location, Utils::Point nearest,
+RouteValidateDiagnostic CreateNotDeepDiagnostic(Utils::Point location, Utils::Point nearest,
                                    double depth, std::string source,
                                    time_t expectedTimeOfTroubles);
 
-std::string GetDiagnosticMessage(const Diagnostic& diagnostic);
+std::string GetDiagnosticMessage(const RouteValidateDiagnostic& diagnostic);
 }  // namespace marine_navi::entities

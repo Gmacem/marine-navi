@@ -1,4 +1,4 @@
-#include "DepthGrid.h"
+#include "depth_grid.h"
 
 namespace marine_navi::entities {
 

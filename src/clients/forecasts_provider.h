@@ -1,6 +1,6 @@
 #pragma once
 
-#include "entities/WeatherForecast.h"
+#include "entities/weather_forecast.h"
 
 #include <vector>
 

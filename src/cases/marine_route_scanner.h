@@ -8,15 +8,15 @@
 
 #include <ocpn_plugin.h>
 
-#include <clients/DbClient.h>
-#include <common/Utils.h>
-#include <entities/DepthGrid.h>
-#include <entities/Diagnostic.h>
-#include <entities/Route.h>
+#include <clients/db_client.h>
+#include <common/utils.h>
+#include <entities/depth_grid.h>
+#include <entities/diagnostic.h>
+#include <entities/route.h>
 
 namespace marine_navi::cases {
 
-struct PathData {
+struct RouteData {
   std::shared_ptr<entities::Route> Route;
   double Speed;
   std::optional<double> ShipDraft;
@@ -25,13 +25,13 @@ struct PathData {
   std::optional<std::string> PathToDepthFile;
 };
 
-class CheckPathCase {
+class MarineRouteScanner {
   using Point = Utils::Point;
 
 public:
-  CheckPathCase(std::shared_ptr<clients::DbClient> dbClient);
-  void SetPathData(const PathData& pathData);
-  const PathData& GetPathData();
+  MarineRouteScanner(std::shared_ptr<clients::DbClient> dbClient);
+  void SetPathData(const RouteData& pathData);
+  const RouteData& GetPathData();
   void SetShow(bool show);
   bool IsShow();
 
@@ -39,17 +39,17 @@ public:
   bool CheckDepth(const entities::DepthGrid& grid, const Point& p, double draft) const;
   void CrossDetect();
 
-  std::optional<entities::Diagnostic> GetDiagnostic();
+  std::optional<entities::RouteValidateDiagnostic> GetDiagnostic();
 
 private:
-  std::optional<entities::Diagnostic> DoCrossDetect() const;
+  std::optional<entities::RouteValidateDiagnostic> DoCrossDetect() const;
 
 private:
   std::mutex mutex_;
-  PathData pathData_;
+  RouteData pathData_;
   bool show_;
   std::shared_ptr<clients::DbClient> dbClient_;
-  std::optional<entities::Diagnostic> diagnostic_;
+  std::optional<entities::RouteValidateDiagnostic> diagnostic_;
 };
 
 }  // namespace marine_navi::cases

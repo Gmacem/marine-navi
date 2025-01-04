@@ -1,7 +1,7 @@
 #pragma once
 
-#include "clients/DbClient.h"
-#include "clients/ForecastsProvider.h"
+#include "clients/db_client.h"
+#include "clients/forecasts_provider.h"
 
 #include <future>
 #include <thread>

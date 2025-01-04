@@ -1,11 +1,10 @@
 #pragma once
 
 #include <pidc.h>
-
-#include "cases/CheckPathCase.h"
-#include "Dependencies.h"
-
 #include <wx/wx.h>
+
+#include "cases/marine_route_scanner.h"
+#include "dependencies.h"
 
 namespace marine_navi {
 
@@ -16,10 +15,10 @@ public:
   bool Render(piDC& dc, PlugIn_ViewPort* vp);
 
 private:
-  void RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp, const cases::PathData& pathData);
+  void RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp, const cases::RouteData& pathData);
 
 private:
-  std::shared_ptr<cases::CheckPathCase> checkPathCase_;
+  std::shared_ptr<cases::MarineRouteScanner> checkPathCase_;
 
   bool checkPathCalculated_;
   std::optional<wxPoint2DDouble> checkPathResult_;

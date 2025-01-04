@@ -1,17 +1,16 @@
 #pragma once
 
-#include "common/csv_parser.h"
-#include "common/HttpClient.h"
-
-#include "ForecastsProvider.h"
-
-#include "ocpn_plugin.h"
-
-#include <wx/curl/http.h>
-
 #include <optional>
 #include <string>
 #include <vector>
+
+#include <wx/curl/http.h>
+
+#include "ocpn_plugin.h"
+
+#include "clients/forecasts_provider.h"
+#include "common/csv_parser.h"
+#include "common/http_client.h"
 
 namespace marine_navi::clients {
 
