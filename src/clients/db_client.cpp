@@ -173,6 +173,9 @@ std::shared_ptr<SQLite::Database> CreateDatabase(
 
     db->exec(query_template.MakeQuery({}));
     return db;
+  } catch (SQLite::Exception& ex) {
+    wxLogError(_T("Failed to create datbase with db reason: %s"), ex.what());
+    throw ex;
   } catch (std::exception& ex) {
     wxLogError(_T("Failed to create datbase with reason: %s"), ex.what());
     throw ex;
