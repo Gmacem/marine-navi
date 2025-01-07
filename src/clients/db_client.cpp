@@ -119,7 +119,8 @@ DbClient::SelectNearestForecasts(
       query_template.MakeQuery(query_builder::ComposeArguments(points_with_id, max_distance, date));
 
   SQLite::Statement st(*db_, query);
-  st.exec(); // skip load extension
+  sqlite3_enable_load_extension(db_->getHandle(), 1);
+
   std::vector<std::tuple<entities::ForecastPoint, double, int>> result;
 
   while (st.executeStep()) {
@@ -162,6 +163,8 @@ std::shared_ptr<SQLite::Database> CreateDatabase(
     std::string db_name,
     std::shared_ptr<query_builder::SqlQueryStorage> query_storage) {
   const std::string kQueryName = "kCreateTables";
+  const char* kSpatialExtension = "mod_spatialite.so";
+
   const auto& query_template = query_storage->GetTemplate(kQueryName);
 
   try {
@@ -173,6 +176,10 @@ std::shared_ptr<SQLite::Database> CreateDatabase(
         dbPath, SQLite::OPEN_CREATE | SQLite::OPEN_READWRITE);
 
     sqlite3_enable_load_extension(db->getHandle(), 1);
+    if (sqlite3_load_extension(db->getHandle(), kSpatialExtension, nullptr, nullptr) != SQLITE_OK) {
+        throw std::runtime_error("error loading extension");
+    }
+
     db->exec(query_template.MakeQuery({}));
     return db;
   } catch (SQLite::Exception& ex) {
