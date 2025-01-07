@@ -16,6 +16,11 @@ double deg2rad(double degrees) {
     return degrees * DEG_TO_RAD;
 }
 
+int sign(double x) {
+    if (abs(x) < kEps) return 0;
+    return (x < 0) ? -1 : 1;
+}
+
 } // namespace
 
 double& Point::X() { return Lon; }
@@ -25,6 +30,13 @@ double& Point::Y() { return Lat; }
 const double& Point::X() const { return Lon; }
 
 const double& Point::Y() const { return Lat; }
+
+Point Point::Rotate(double alpha) const {
+    double net_lat = Lat * cos(alpha) - Lon * sin(alpha);
+    double new_lon = Lat * sin(alpha) + Lon * cos(alpha);
+    return Point{net_lat, new_lon};
+}
+
 
 Point operator+(const Point& lhs, const Point& rhs) {
   return Point{lhs.Lat + rhs.Lat, lhs.Lon + rhs.Lon};
@@ -40,6 +52,22 @@ Point operator*(const Point& p, double x) {
 
 Point operator*(double x, const Point& p) {
   return Point{p.Lat * x, p.Lon * x};
+}
+
+double DotProduct(const Point& p1, const Point& p2) {
+    return p1.X() * p2.X() + p1.Y() * p2.Y();
+}
+
+double CrossProduct(const Point& p1, const Point& p2) {
+    return p1.X() * p2.Y() - p1.Y() * p2.X();
+}
+
+
+bool IsInsideOfAngle(const Point a, const Point b, const Point c) {
+  int cross_ab = sign(CrossProduct(a, b));
+  int cross_bc = sign(CrossProduct(b, c));
+
+  return cross_ab == cross_bc || cross_ab == 0 || cross_bc == 0;
 }
 
 double GetHaversineDistance(Point lhs, Point rhs) {

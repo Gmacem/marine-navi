@@ -19,5 +19,7 @@ namespace marine_navi::common {
 double CalculateVelocityRatio(double N, double D, double L, double delta, double h3_percent);
 
 double KnotsToMetersPerSecond(double knots);
+double FeetToMeters(double ft);
 
+double CalculateSteeringAngle(double v, double v_nominal = 2.0);
 } // namespace marine_navi::common

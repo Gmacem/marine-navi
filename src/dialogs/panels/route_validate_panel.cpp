@@ -9,6 +9,7 @@
 
 #include <cases/forecasts_loader.h>
 #include <cases/marine_route_scanner.h>
+#include <common/marine_math.h>
 
 namespace marine_navi::dialogs::panels {
 
@@ -99,9 +100,14 @@ void RouteValidatePanel::CreateControls() {
 
   {
     b_browse_depth_file_button_ = new wxButton(firstPnl, wxID_ANY, _("Browse..."));
-    c_speed_ = CreateLabeledTextCtrl(firstPanelSizer, _("Ship speed, kn"));
-    c_ship_draft_ = CreateLabeledTextCtrl(firstPanelSizer, _("Ship draft, m"));
-    c_max_wave_ = CreateLabeledTextCtrl(firstPanelSizer, _("Max wave, m"));
+    
+    c_danger_height_ = CreateLabeledTextCtrl(firstPanelSizer, _("Danger name, m"), "2");
+    c_engine_power_ = CreateLabeledTextCtrl(firstPanelSizer, _("Engine power, kw"), "1000");
+    c_displacement_ = CreateLabeledTextCtrl(firstPanelSizer, _("Displacement, ton"), "5000");
+    c_length_ = CreateLabeledTextCtrl(firstPanelSizer, _("Ship length, m"), "100");
+    c_fullness_ = CreateLabeledTextCtrl(firstPanelSizer, _("Block coefficient"), "0.8");
+    c_speed_ = CreateLabeledTextCtrl (firstPanelSizer, _("Speed, knot"), "2");
+    c_ship_draft_ = CreateLabeledTextCtrl(firstPanelSizer, _("Ship draft, m"), "1");
 
     {
       wxBoxSizer* datetime = new wxBoxSizer(wxHORIZONTAL);
@@ -151,12 +157,14 @@ void RouteValidatePanel::CreateControls() {
 }
 
 wxTextCtrl* RouteValidatePanel::CreateLabeledTextCtrl(wxSizer* sizer,
-                                                       const wxString& label) {
+                                                      const wxString& label,
+                                                      std::optional<wxString> default_value) {
   wxFloatingPointValidator<double> validator(2, nullptr, wxNUM_VAL_DEFAULT);
   validator.SetRange(-1e5, 1e5);
   sizer->Add(new wxStaticText(this, wxID_ANY, label));
+
   wxTextCtrl* textCtrl =
-      new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
+      new wxTextCtrl(this, wxID_ANY, default_value.value_or(wxEmptyString), wxDefaultPosition,
                      wxDefaultSize, 0, validator);
   sizer->Add(textCtrl, 0, wxALL, 5);
   return textCtrl;
@@ -221,14 +229,28 @@ void RouteValidatePanel::OnCheckPathClicked(wxCommandEvent&) {
   if (CheckIsEmpty(c_speed_, _("Please specify speed"))) {
     return;
   }
-  route_data.ShipDraft = parseDouble(c_ship_draft_->GetValue());
-  route_data.MaxWaveHeight = parseDouble(c_max_wave_->GetValue());
+
+  route_data.DangerHeight = parseDouble(c_danger_height_->GetValue().mb_str());
+  route_data.EnginePower = parseDouble(c_engine_power_->GetValue().mb_str());
+  route_data.Displacement = parseDouble(c_displacement_->GetValue().mb_str());
+  route_data.Length = parseDouble(c_length_->GetValue().mb_str());
+  route_data.Fullness = parseDouble(c_fullness_->GetValue().mb_str());
+  route_data.Speed = parseDouble(c_speed_->GetValue().mb_str());
+  if (route_data.Speed.has_value()) {
+    route_data.Speed = common::KnotsToMetersPerSecond(route_data.Speed.value());
+  } else {
+    wxMessageBox("Invalid speed", "Error", wxOK | wxICON_ERROR);
+    return;
+  }
+  route_data.ShipDraft = parseDouble(c_ship_draft_->GetValue().mb_str());
+  if (route_data.ShipDraft.has_value()) {
+    route_data.ShipDraft = common::FeetToMeters(route_data.ShipDraft.value());
+  }
   route_data.PathToDepthFile =
       c_depth_file_->IsEmpty()
           ? std::nullopt
           : std::optional<std::string>(c_depth_file_->GetValue().mb_str());
   route_data.DepartTime = GetTimeFromCtrls(d_route_date_, t_route_time_);
-  route_data.PathToDepthFile = c_depth_file_->GetValue();
 
   marine_route_scanner_->SetPathData(route_data);
   marine_route_scanner_->SetShow(true);

@@ -20,9 +20,13 @@ namespace marine_navi::cases {
 
 struct RouteData {
   std::shared_ptr<entities::Route> Route;
-  double Speed;
+  std::optional<double> DangerHeight;
+  std::optional<double> EnginePower;
+  std::optional<double> Displacement;
+  std::optional<double> Length;
+  std::optional<double> Fullness;
+  std::optional<double> Speed;
   std::optional<double> ShipDraft;
-  std::optional<double> MaxWaveHeight;
   time_t DepartTime;
   std::optional<std::string> PathToDepthFile;
 };

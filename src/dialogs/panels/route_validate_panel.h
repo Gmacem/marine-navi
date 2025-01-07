@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <optional>
+
 #include <wx/datectrl.h>
 #include <wx/timectrl.h>
 #include <wx/wx.h>
@@ -17,7 +20,7 @@ public:
 
 private:
   void CreateControls();
-  wxTextCtrl* CreateLabeledTextCtrl(wxSizer* sizer, const wxString& label);
+  wxTextCtrl* CreateLabeledTextCtrl(wxSizer* sizer, const wxString& label, std::optional<wxString> default_value = std::nullopt);
   wxTextCtrl* CreateBrowseFileTextCtrl(wxButton* browse_button, wxSizer* sizer,
                                        const wxString& label);
   void BindEvents();
@@ -35,9 +38,15 @@ private:
 
   wxListBox* route_list_box_;
   wxTextCtrl* c_route_name_;
+
+  wxTextCtrl* c_danger_height_;
+  wxTextCtrl* c_engine_power_;
+  wxTextCtrl* c_displacement_;
+  wxTextCtrl* c_length_;
+  wxTextCtrl* c_fullness_;
   wxTextCtrl* c_speed_;
   wxTextCtrl* c_ship_draft_;
-  wxTextCtrl* c_max_wave_;
+
   wxDatePickerCtrl* d_route_date_;
   wxTimePickerCtrl* t_route_time_;
   wxTextCtrl* c_depth_file_;

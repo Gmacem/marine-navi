@@ -24,6 +24,53 @@ std::vector<entities::RoutePoint> GetRoutePoints(const std::shared_ptr<entities:
   return result;
 }
 
+bool IsPointOnRoute(const common::Segment& segment, const common::Point point, double alpha) {
+  const auto direction = segment.End - segment.Start;
+
+  return common::IsInsideOfAngle(direction, point, direction.Rotate(alpha)) ||
+         common::IsInsideOfAngle(direction, point, direction.Rotate(-alpha));
+}
+
+bool IsForecastDangerous(const entities::RouteSegment& route_segment,
+                         const entities::ForecastPoint& forecast,
+                         double speed,
+                         time_t expected_time,
+                         double danger_height) {
+  double distance = common::GetHaversineDistance(route_segment.segment.Start, forecast.point);
+  double t = distance / speed;
+  expected_time += t;
+  if (expected_time < forecast.started_at || expected_time > forecast.end_at) {
+    return false;
+  }
+  double alpha = common::CalculateSteeringAngle(speed);
+  if (!IsPointOnRoute(route_segment.segment, forecast.point, alpha)) {
+    return false;
+  }
+  return danger_height < forecast.GetWaveHeight();
+}
+
+double GetSpeed(const RouteData& route_data, const double wave_height) {
+  if (
+      !route_data.DangerHeight.has_value() ||
+      !route_data.EnginePower.has_value() ||
+      !route_data.Displacement.has_value() ||
+      !route_data.Length.has_value() ||
+      !route_data.Fullness.has_value() ||
+      !route_data.ShipDraft.has_value()
+  ) {
+    return route_data.Speed.value();
+  }
+  auto r = common::CalculateVelocityRatio(
+    route_data.EnginePower.value(),
+    route_data.Displacement.value(),
+    route_data.Length.value(),
+    route_data.Fullness.value(),
+    wave_height
+  );
+
+  return r * route_data.Speed.value();
+}
+
 } // namespace
 
 MarineRouteScanner::MarineRouteScanner(std::shared_ptr<clients::DbClient> dbClient)
@@ -93,15 +140,14 @@ void MarineRouteScanner::CrossDetect() {
   }
 }
 
-bool IsForecastDangerous(const entities::RoutePoint& route_point,
-                         const entities::ForecastPoint& forecast,
-                         time_t expected_time_to_point) {
-  return false;
-}
-
 std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::GetForecastDiagnostic() const {
   static constexpr double DANGEROUS_DISTANCE_METERS = 1000;
-  time_t check_time = common::GetCurrentTime();
+  if (!route_data_.DangerHeight.has_value()) {
+    return {};
+  }
+  double danger_height = route_data_.DangerHeight.value();
+  time_t depart_time = route_data_.DepartTime;
+
   const auto route_points = GetRoutePoints(route_data_.Route);
   std::vector<common::Point> points;
   std::transform(route_points.begin(), route_points.end(), std::back_inserter(points),
@@ -116,17 +162,32 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
   }
 
   std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
+  time_t cur_time = depart_time;
 
   for(size_t i = 0; i < grouped.size(); ++i) {
+    double wave_height = 0;
+    for(const auto& forecast_with_distance : grouped[i]) {
+      wave_height = std::max(wave_height, forecast_with_distance.first.GetWaveHeight());
+    }
+    double speed = GetSpeed(route_data_, wave_height);
+
+    const size_t segment_id = route_points[i].segment_id;
+    const auto& segment = route_data_.Route->GetSegments()[segment_id];
+    wxLogInfo("check forecasts for segment %zu, speed %f, danger height %f", segment_id, speed, danger_height);
+
     for(const auto& forecast_with_distance : grouped[i]) {
       const auto& forecast = forecast_with_distance.first;
-      if (IsForecastDangerous(route_points[i], forecast, check_time)) {
+      if (IsForecastDangerous(segment, forecast, speed, cur_time, danger_height)) {
         result.push_back(entities::diagnostic::MakeHighWavesHazardPoint(
             forecast.point,
-            check_time,
-            check_time,
-            forecast.wave_height.value_or(0) + forecast.swell_height.value_or(0)));
+            speed,
+            cur_time,
+            forecast.GetWaveHeight()));
       }
+    }
+
+    if (i + 1 < route_points.size()) {
+      cur_time += common::GetHaversineDistance(route_points[i].point, route_points[i+1].point) / speed;
     }
   }
 

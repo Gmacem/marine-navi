@@ -17,4 +17,15 @@ double KnotsToMetersPerSecond(double knots) {
     return knots * 0.514444;
 }
 
+double FeetToMeters(double ft) {
+    return ft * 0.3048;
+}
+
+double CalculateSteeringAngle(double v, double v_nominal) {
+    const double degrees_to_radians = M_PI / 180.0;
+    double alpha_degrees = 1.0 * (v / v_nominal);
+    double alpha_radians = alpha_degrees * degrees_to_radians;
+    return alpha_radians;
+}
+
 } // namespace marine_navi::common
