@@ -5,7 +5,9 @@
 #include <optional>
 #include <vector>
 
+#include "common/geom.h"
 #include "common/utils.h"
+#include "entities/depth_point.h"
 
 namespace marine_navi::entities {
 
@@ -13,8 +15,11 @@ class DepthGrid {
 public:
   DepthGrid(std::string filepath);
 
-  std::optional<double> GetDepth(double lat, double lon) const;
-  std::optional<Utils::Point> GetNearest(double lat, double lon) const;
+  std::optional<double> GetDepth(const common::Point point) const;
+  std::optional<common::Point> GetNearest(const common::Point point) const;
+  std::optional<entities::DepthPoint> GetNearestDepthPoint(const common::Point point) const;
+
+  std::vector<entities::DepthPoint> GetAllPoints() const;
 
 private:
   uint32_t nCols_;

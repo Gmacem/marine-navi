@@ -1,8 +1,6 @@
 #include "http_client.h"
 
-namespace marine_navi {
-
-namespace Utils {
+namespace marine_navi::common {
 
 HttpClient::HttpClient(const wxString& szURL, const wxString& szUserName,
                        const wxString& szPassword, wxEvtHandler* pEvtHandler,
@@ -13,5 +11,4 @@ void HttpClient::AddHeader(const std::string& value) {
   m_arrHeaders.Add(value);
 }
 
-}  // namespace Utils
-}  // namespace marine_navi
+}  // namespace marine_navi::common

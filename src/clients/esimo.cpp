@@ -95,8 +95,8 @@ void EsimoProvider::LoadForecasts() {
 
 Forecast EsimoProvider::GetForecast() {
   auto now = std::chrono::system_clock::now();
-  auto startTime = Utils::ToString(std::chrono::system_clock::to_time_t(now));
-  auto endTime = Utils::ToString(std::chrono::system_clock::to_time_t(now));
+  auto startTime = common::ToString(std::chrono::system_clock::to_time_t(now));
+  auto endTime = common::ToString(std::chrono::system_clock::to_time_t(now));
 
   for (const auto& record : records_) {
     startTime = std::min(startTime, record.StartedAt);

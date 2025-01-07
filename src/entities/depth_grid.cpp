@@ -37,39 +37,59 @@ DepthGrid::DepthGrid(std::string filepath) {
   maxLon_ = xCorner_ + cellSize_ * nCols_;
 }
 
-std::optional<double> DepthGrid::GetDepth(double lat, double lon) const {
-  if (maxLon_ > 180 && lon < 0) {
-    lon = 360 + lon;
+std::optional<double> DepthGrid::GetDepth(const common::Point point) const {
+  const auto depth_point = GetNearestDepthPoint(point);
+  if (depth_point.has_value()) {
+    return depth_point.value().Depth;
   }
-  if (minLon_ > lon || lon >= maxLon_ || minLat_ > lat || lat >= maxLat_) {
-    return std::nullopt;
-  }
-  int r = (lat - minLat_) / cellSize_;
-  int c = (lon - minLon_) / cellSize_;
-
-  printf("Get depth: %f %f %f %f %d %d %d %d\n", lat, lon, minLat_, minLon_, r,
-         c, nRows_, nCols_);
-
-  if (r < 0 || r >= nRows_ || c < 0 || c >= nCols_) {
-    return std::nullopt;
-  }
-  return data_[data_.size() - r - 1][c];
+  return std::nullopt;
 }
 
-std::optional<Utils::Point> DepthGrid::GetNearest(double lat,
-                                                  double lon) const {
+std::optional<common::Point> DepthGrid::GetNearest(const common::Point point) const {
+  const auto depth_point = GetNearestDepthPoint(point);
+  if (depth_point.has_value()) {
+    return depth_point.value().Point;
+  }
+  return std::nullopt;
+}
+
+std::optional<entities::DepthPoint> DepthGrid::GetNearestDepthPoint(const common::Point point) const {
+  double lat = point.Lat;
+  double lon = point.Lon;
   if (maxLon_ > 180 && lon < 0) {
     lon = 360 + lon;
   }
   if (minLon_ > lon || lon >= maxLon_ || minLat_ > lat || lat >= maxLat_) {
     return std::nullopt;
   }
-  int r = (lat - minLat_) / cellSize_;
-  int c = (lon - minLon_) / cellSize_;
+  size_t r = (lat - minLat_) / cellSize_;
+  size_t c = (lon - minLon_) / cellSize_;
   if (r < 0 || r >= nRows_ || c < 0 || c >= nCols_) {
     return std::nullopt;
   }
-  return Utils::Point{r * cellSize_ + minLat_, c * cellSize_ + minLon_};
+  return entities::DepthPoint{
+    common::Point{r * cellSize_ + minLat_, c * cellSize_ + minLon_},
+    static_cast<double>(data_[data_.size() - r - 1][c])
+  };
+}
+
+std::vector<entities::DepthPoint> DepthGrid::GetAllPoints() const {
+  std::vector<entities::DepthPoint> result;
+
+  for(size_t i = 0; i < data_.size(); ++i) {
+    for(size_t j = 0; j < data_[i].size(); ++j) {
+      result.push_back(
+        entities::DepthPoint{
+          common::Point{
+            i * cellSize_ + minLat_,
+            j * cellSize_ + minLon_
+          },
+          static_cast<double>(data_[i][j])
+      });
+    }
+  }
+
+  return result;
 }
 
 }  // namespace marine_navi::entities

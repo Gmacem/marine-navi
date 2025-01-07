@@ -24,11 +24,13 @@ void RenderOverlay::RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp,
   dc.SetPen(pen);
 
   auto cross = checkPathCase_->GetDiagnostic();
-  if (cross.has_value()) {
+  if (cross.has_value() && cross->result == entities::diagnostic::RouteValidateDiagnostic::DiagnosticResultType::kWarning) {
     wxPoint2DDouble crossCenter;
-    GetDoubleCanvasPixLL(vp, &crossCenter, cross->Location.Y(),
-                         cross->Location.X());
-    dc.DrawCircle(round(crossCenter.m_x), round(crossCenter.m_y), 10);
+    for(const auto& hazard_point : cross->hazard_points) {
+      const auto location = hazard_point.GetLocation();
+      GetDoubleCanvasPixLL(vp, &crossCenter, location.Lat, location.Lon);
+      dc.DrawCircle(round(crossCenter.m_x), round(crossCenter.m_y), 10);
+    }
   }
 }
 

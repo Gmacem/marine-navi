@@ -30,7 +30,7 @@ private:
 private:
   std::string resourceId_;
 
-  Utils::HttpClient curl_;
+  common::HttpClient curl_;
 
   std::string url;
   std::string responseBody_;

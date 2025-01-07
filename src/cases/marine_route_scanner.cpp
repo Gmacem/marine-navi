@@ -1,18 +1,42 @@
 #include "marine_route_scanner.h"
 
+#include "common/marine_math.h"
+#include "entities/depth_point.h"
+
 namespace marine_navi::cases {
 
+namespace {
+
+void InsertDepth(const entities::DepthGrid& grid, std::shared_ptr<clients::DbClient> db_client) {
+  const auto points = grid.GetAllPoints();
+  db_client->InsertDepthPointBatch(points);
+}
+
+std::vector<entities::RoutePoint> GetRoutePoints(const std::shared_ptr<entities::Route>& route) {
+  static constexpr double STEP_DIST_METERS = 100;
+  std::vector<entities::RoutePoint> result;
+  
+  double total = route->GetDistance();
+
+  for (size_t i = 0; i * STEP_DIST_METERS < total; ++i) {
+    result.emplace_back(route->GetPointFromStart(i * STEP_DIST_METERS));
+  }
+  return result;
+}
+
+} // namespace
+
 MarineRouteScanner::MarineRouteScanner(std::shared_ptr<clients::DbClient> dbClient)
-    : mutex_(), pathData_(), show_(false), dbClient_(dbClient) {}
+    : mutex_(), route_data_(), show_(false), db_client_(dbClient) {}
 
 void MarineRouteScanner::SetPathData(const RouteData& pathData) {
   std::lock_guard lock(mutex_);
-  pathData_ = pathData;
+  route_data_ = pathData;
 }
 
 const RouteData& MarineRouteScanner::GetPathData() {
   std::lock_guard lock(mutex_);
-  return pathData_;
+  return route_data_;
 }
 
 void MarineRouteScanner::SetShow(bool show) {
@@ -26,7 +50,7 @@ bool MarineRouteScanner::IsShow() {
 }
 
 bool MarineRouteScanner::CheckLandIntersection(const Point& p1,
-                                          const Point& p2) const {
+                                               const Point& p2) const {
   static constexpr double EPS = 1e-5;
 
   Point minCorner{std::min(p1.Lat, p2.Lat), std::min(p1.Lon, p2.Lon)};
@@ -41,8 +65,8 @@ bool MarineRouteScanner::CheckLandIntersection(const Point& p1,
 }
 
 bool MarineRouteScanner::CheckDepth(const entities::DepthGrid& grid, const Point& p,
-                               double draft) const {
-  auto depth = grid.GetDepth(p.Lat, p.Lon);
+                                     double draft) const {
+  auto depth = grid.GetDepth(p);
 
   if (depth.has_value()) {
     return -depth.value() > draft;  // TODO perhaps it needs to be taken into
@@ -52,7 +76,7 @@ bool MarineRouteScanner::CheckDepth(const entities::DepthGrid& grid, const Point
   return true;
 }
 
-std::optional<entities::RouteValidateDiagnostic> MarineRouteScanner::GetDiagnostic() {
+std::optional<entities::diagnostic::RouteValidateDiagnostic> MarineRouteScanner::GetDiagnostic() {
   std::lock_guard lock(mutex_);
   return diagnostic_;
 }
@@ -69,65 +93,95 @@ void MarineRouteScanner::CrossDetect() {
   }
 }
 
-std::optional<entities::RouteValidateDiagnostic> MarineRouteScanner::DoCrossDetect() const {
-  static constexpr int ITER_NUM = 50;
-  std::optional<entities::DepthGrid> grid;
-  auto route = pathData_.Route;
-  if (pathData_.PathToDepthFile.has_value() &&
-      pathData_.ShipDraft.has_value()) {
-    grid = entities::DepthGrid(pathData_.PathToDepthFile.value());
-  }
-  std::vector<std::pair<int, Point> > pathPoints;
+bool IsForecastDangerous(const entities::RoutePoint& route_point,
+                         const entities::ForecastPoint& forecast,
+                         time_t expected_time_to_point) {
+  return false;
+}
 
-  double total = route->GetDistance();
+std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::GetForecastDiagnostic() const {
+  static constexpr double DANGEROUS_DISTANCE_METERS = 1000;
+  time_t check_time = common::GetCurrentTime();
+  const auto route_points = GetRoutePoints(route_data_.Route);
+  std::vector<common::Point> points;
+  std::transform(route_points.begin(), route_points.end(), std::back_inserter(points),
+                 [](const entities::RoutePoint& route_point) { return route_point.point; });
+  auto forecasts = db_client_->SelectNearestForecasts(points, common::GetCurrentTime(), DANGEROUS_DISTANCE_METERS);
 
-  for (int i = 0; i <= ITER_NUM; ++i) {
-    double k = static_cast<double>(i) / ITER_NUM;
-    pathPoints.emplace_back(i, route->GetPointFromStart(k * total));
-  }
+  std::vector<std::vector<std::pair<entities::ForecastPoint, double>>> grouped(route_points.size());
 
-  auto forecasts = dbClient_->SelectNearestForecasts(
-      pathPoints, Utils::CurrentFormattedTime());
-
-  std::unordered_map<int, double> forecast_by_point;
-  std::unordered_map<int, int> forecastIdByPoint;
-  for (auto& [forecastId, id, wave_height, swell_height] : forecasts) {
-    if (!wave_height.has_value()) {
-      continue;
-    }
-    double height = wave_height.value();
-    height += swell_height.has_value() ? swell_height.value() : 0;
-    forecast_by_point[id] = height;
-    forecastIdByPoint[id] = forecastId;
+  for(const auto& forecast : forecasts) {
+    int id = std::get<2>(forecast);
+    grouped[id].emplace_back(std::get<0>(forecast), std::get<1>(forecast));
   }
 
-  for (size_t i = 0; i < pathPoints.size(); ++i) {
-    auto& p = pathPoints[i].second;
-    int id = pathPoints[i].first;
+  std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
 
-    auto it = forecast_by_point.find(id);
-
-    wxLogInfo(_T("Point: %lu %f %f %d %d"), i, p.Lat, p.Lon, grid.has_value(), it != forecast_by_point.end());
-
-    if (pathData_.MaxWaveHeight.has_value() && it != forecast_by_point.end()) {
-      if (it->second >= pathData_.MaxWaveHeight) {
-        return entities::CreateHighWavesDiagnostic(
-            p, dbClient_->SelectForecastLocation(forecastIdByPoint[id]),
-            it->second, "esimo.ru", std::time(0));
+  for(size_t i = 0; i < grouped.size(); ++i) {
+    for(const auto& forecast_with_distance : grouped[i]) {
+      const auto& forecast = forecast_with_distance.first;
+      if (IsForecastDangerous(route_points[i], forecast, check_time)) {
+        result.push_back(entities::diagnostic::MakeHighWavesHazardPoint(
+            forecast.point,
+            check_time,
+            check_time,
+            forecast.wave_height.value_or(0) + forecast.swell_height.value_or(0)));
       }
     }
+  }
 
-    if (grid.has_value() &&
-        !CheckDepth(grid.value(), p, pathData_.ShipDraft.value())) {
-      printf("Max depth dected\n");
-      return entities::CreateNotDeepDiagnostic(
-          p, grid->GetNearest(p.Lat, p.Lon).value(),
-          grid->GetDepth(p.Lat, p.Lon).value(), "gebco.net", std::time(0));
+  return result;
+}
+
+std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::GetDepthDiagnostic() const {
+  const auto route = route_data_.Route;
+  time_t check_time = common::GetCurrentTime();
+  const auto route_points = GetRoutePoints(route_data_.Route);
+
+  std::optional<entities::DepthGrid> grid;
+  if (route_data_.PathToDepthFile.has_value() &&
+      route_data_.ShipDraft.has_value()) {
+    grid = entities::DepthGrid(route_data_.PathToDepthFile.value());
+  } else {
+    wxLogWarning("depth grid or ship draft is not provided");
+    return {};
+  }
+
+  std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
+
+  for(const auto& route_point : route_points) {
+    const auto depth_point = grid->GetNearestDepthPoint(route_point.point);
+    if (depth_point.has_value() && -depth_point->Depth < route_data_.ShipDraft.value()) {
+      result.push_back(entities::diagnostic::MakeDepthHazardPoint(
+        depth_point->Point,
+        check_time,
+        check_time,
+        depth_point->Depth
+      )); // TODO: check time
     }
   }
-  printf("Cross not detected\n");
 
-  return std::nullopt;
+  return result;
+}
+
+entities::diagnostic::RouteValidateDiagnostic MarineRouteScanner::DoCrossDetect() const {
+  const auto diagnostic_forecast = GetForecastDiagnostic();
+  const auto diagnostic_depth = GetDepthDiagnostic();
+
+  if (diagnostic_forecast.empty() && diagnostic_depth.empty()) { 
+    return entities::diagnostic::RouteValidateDiagnostic{
+      .result = entities::diagnostic::RouteValidateDiagnostic::DiagnosticResultType::kOk,
+      .hazard_points = {}
+    };
+  }
+
+  auto hazard_points = diagnostic_depth;
+  hazard_points.insert(hazard_points.end(), diagnostic_forecast.begin(), diagnostic_forecast.end());
+
+  return entities::diagnostic::RouteValidateDiagnostic{
+    .result = entities::diagnostic::RouteValidateDiagnostic::DiagnosticResultType::kWarning,
+    .hazard_points = hazard_points
+  };
 }
 
 }  // namespace marine_navi::cases

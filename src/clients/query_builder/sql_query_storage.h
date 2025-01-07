@@ -6,9 +6,18 @@
 #include <optional>
 #include <vector>
 
+#include <common/geom.h>
+
 namespace marine_navi::clients::query_builder {
 
-using BaseArgVar = std::variant<int64_t, double, std::string>;
+using BaseArgVar = std::variant<
+    int64_t,
+    double,
+    std::string,
+    common::Point,
+    common::Segment,
+    common::Polyline>;
+
 using SingleArgVar = std::variant<BaseArgVar, std::optional<BaseArgVar> >;
 using ComposedArgVar = std::variant<
     SingleArgVar,

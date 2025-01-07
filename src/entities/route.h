@@ -4,26 +4,36 @@
 
 #include <ocpn_plugin.h>
 
+#include "common/geom.h"
 #include "common/utils.h"
 
 namespace marine_navi::entities {
 
+struct RoutePoint {
+  common::Point point;
+  size_t segment_id;
+  double distance_from_start_route;
+  double distance_from_start_segment;
+};
+
+struct RouteSegment {
+  common::Segment segment;
+};
+
 class Route {
 public:
-  Route(std::vector<PlugIn_Waypoint> route) : route_(route) {
-    for (size_t i = 0; i < route_.size(); ++i) {
-      points_.push_back(Utils::Point{route_[i].m_lat, route_[i].m_lon});
-    }
-  }
+  Route(std::vector<PlugIn_Waypoint> waypoints);
 
-  double GetDistance() const;
-  Utils::Point GetPointFromStart(double len);
-  const std::vector<PlugIn_Waypoint>& GetRoute() const { return route_; }
-  const std::vector<Utils::Point>& GetPoints() const { return points_; }
+  double GetDistance() const { return total_distance_; }
+  RoutePoint GetPointFromStart(double len);
+  const std::vector<RoutePoint>& GetPoints() const { return points_; }
+  const std::vector<RouteSegment>& GetSegments() const { return segments_; }
 
 private:
-  std::vector<Utils::Point> points_;
-  std::vector<PlugIn_Waypoint> route_;
+  const std::vector<PlugIn_Waypoint> waypoints_;
+  std::vector<RoutePoint> points_;
+  std::vector<RouteSegment> segments_;
+  double total_distance_;
 };
 
 }  // namespace marine_navi::entities

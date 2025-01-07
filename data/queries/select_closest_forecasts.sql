@@ -1,17 +1,27 @@
 -- kSelectClosestForecasts
 
-WITH path(id, X, Y) AS (
+WITH tmp_route(id, geom) AS (
     VALUES $1
-), fwd as (
-    SELECT forecast_records.id as fid, path.id as pid,
-    (forecast_records.lon - path.X) * (forecast_records.lon - path.X) 
-        + (forecast_records.lat - path.Y) * (forecast_records.lat - path.Y) 
-        as dst, forecast_records.wave_height, forecast_records.swell_height 
-    from forecast_records 
-    CROSS JOIN path 
-    WHERE $2 < forecast_records.end_at) 
-SELECT mfwd.dst, fwd.dst, fwd.fid, fwd.pid, fwd.wave_height, 
-fwd.swell_height from fwd 
-INNER JOIN ( 
-    select fid, min(dst) as dst FROM fwd GROUP BY pid) mfwd 
-on fwd.dst = mfwd.dst and fwd.fid = mfwd.fid;
+) 
+SELECT
+    ST_AsText(fr.geom) AS location,
+    fr.started_at,
+    fr.end_at,
+    fr.wave_height,
+    fr.swell_height,
+    ST_Distance(
+        Transform(tr.geom, 3857),
+        Transform(fr.geom, 3857)
+    ) AS distance,
+    tr.id as pid
+FROM
+    forecast_records fr
+INNER JOIN
+    tmp_route tr
+ON
+    ST_DistanceWithin(
+        Transform(fr.geom, 3857),
+        Transform(tr.geom, 3857),
+        $2
+) 
+WHERE fr.started_at >= $3;

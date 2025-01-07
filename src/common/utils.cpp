@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include <stdio.h>
@@ -7,30 +8,18 @@
 #include <time.h>
 
 namespace marine_navi {
-namespace Utils {
 
-double& Point::X() { return Lon; }
-
-double& Point::Y() { return Lat; }
-
-const double& Point::X() const { return Lon; }
-
-const double& Point::Y() const { return Lat; }
-
-Point operator+(const Point& lhs, const Point& rhs) {
-  return Point{lhs.Lat + rhs.Lat, lhs.Lon + rhs.Lon};
-}
-
-Point operator-(const Point& lhs, const Point& rhs) {
-  return Point{lhs.Lat - rhs.Lat, lhs.Lon - rhs.Lon};
-}
-
-Point operator*(const Point& p, double x) {
-  return Point{p.Lat * x, p.Lon * x};
-}
-
-Point operator*(double x, const Point& p) {
-  return Point{p.Lat * x, p.Lon * x};
+std::string TrimSpace(const std::string& str) {
+    const auto str_begin = std::find_if_not(str.begin(), str.end(), [](unsigned char ch) {
+        return std::isspace(ch);
+    });
+    const auto str_end = std::find_if_not(str.rbegin(), str.rend(), [](unsigned char ch) {
+        return std::isspace(ch);
+    }).base();
+    if (str_begin >= str_end) {
+        return "";
+    }
+    return std::string(str_begin, str_end);
 }
 
 time_t ParseDate(const std::string& repr, const std::string& format) {
@@ -54,5 +43,8 @@ std::string CurrentFormattedTime(const std::string& format) {
   return oss.str();
 }
 
-}  // namespace Utils
+time_t GetCurrentTime() {
+  return std::time(nullptr);
+}
+
 }  // namespace marine_navi

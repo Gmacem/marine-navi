@@ -212,7 +212,7 @@ void RouteValidatePanel::OnCheckPathClicked(wxCommandEvent&) {
   } else {
     route_data.Route = std::make_shared<entities::Route>(
         entities::Route(GetRoute(route_list_box_->GetString(selection))));
-    if (route_data.Route->GetRoute().size() < 2) {
+    if (route_data.Route->GetSegments().size() < 1) {
       wxMessageBox("Invalid route.", "Error", wxOK | wxICON_ERROR);
       return;
     }

@@ -13,21 +13,21 @@ namespace marine_navi::entities {
 
 
 struct WeatherForecastData {
-    Utils::Point Point;
+    geom::Point Point;
 
     double WaveHeight;
 
 };
 
 class IWeatherForecastProvider {
-    using Point = Utils::Point;
+    using Point = geom::Point;
 public:
     virtual WeatherForecastData GetForecast(time_t date, const Point& p) = 0;
     virtual ~IWeatherForecastProvider();
 };
 
 class EsimoProvider : public IWeatherForecastProvider {
-    using Point = Utils::Point;
+    using Point = geom::Point;
 public:
     EsimoProvider(std::string resourceId) {
         CURL *curl;
@@ -44,7 +44,7 @@ private:
 };
 
 class WeatherGrid {
-    using Point = Utils::Point;
+    using Point = geom::Point;
 public:
     bool IsAvailablePoint(const Ship& ship, const Point& p) = 0;
 };

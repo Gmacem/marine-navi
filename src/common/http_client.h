@@ -2,9 +2,7 @@
 
 #include <wx/curl/http.h>
 
-namespace marine_navi {
-
-namespace Utils {
+namespace marine_navi::common {
 
 class HttpClient : public wxCurlHTTP {
 public:
@@ -18,5 +16,4 @@ public:
   void AddHeader(const std::string& value);
 };
 
-}  // namespace Utils
-}  // namespace marine_navi
+}  // namespace marine_navi::common

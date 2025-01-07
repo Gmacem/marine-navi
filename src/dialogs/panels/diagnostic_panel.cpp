@@ -14,8 +14,8 @@ DiagnosticPanel::DiagnosticPanel(wxWindow* parent) : wxPanel(parent) {
   SetSizerAndFit(sizer);
 }
 
-void DiagnosticPanel::UpdateDiagnostic(const entities::RouteValidateDiagnostic& diagnostic) {
-  auto message = entities::GetDiagnosticMessage(diagnostic);
+void DiagnosticPanel::UpdateDiagnostic(const entities::diagnostic::RouteValidateDiagnostic& diagnostic) {
+  auto message = entities::diagnostic::GetDiagnosticMessage(diagnostic);
   c_diagnostic_message_->SetValue(message);
 }
 

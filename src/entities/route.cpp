@@ -2,22 +2,42 @@
 
 namespace marine_navi::entities {
 
-double Route::GetDistance() const {
-  double dist = 0;
-  for (size_t i = 0; i + 1 < points_.size(); ++i) {
-    dist += Utils::GetDistance(points_[i], points_[i + 1]);
+Route::Route(std::vector<PlugIn_Waypoint> waypoints) : waypoints_(waypoints), total_distance_(0) {
+  for (size_t i = 0; i < waypoints_.size(); ++i) {
+    const auto waypoint = common::Point{
+      waypoints_[i].m_lat,
+      waypoints_[i].m_lon
+    };
+
+    if (i != 0) {
+      total_distance_ += common::GetHaversineDistance(
+        points_.back().point, waypoint
+      );
+    }
+    points_.push_back(RoutePoint{waypoint, i, total_distance_, 0});
   }
-  return dist;
+
+  for(size_t i = 0; i + 1 < waypoints.size(); ++i) {
+    segments_.push_back(RouteSegment{common::Segment{
+      points_[i].point,
+      points_[i + 1].point
+    }});
+  }
 }
 
-Utils::Point Route::GetPointFromStart(double len) {
+RoutePoint Route::GetPointFromStart(double len) {
   double pref = 0;
-  for (size_t i = 0; i + 1 < points_.size(); ++i) {
-    double dist = Utils::GetDistance(points_[i], points_[i + 1]);
+  for (size_t i = 0; i < segments_.size(); ++i) {
+    double dist = common::GetHaversineDistance(segments_[i].segment);
     if (len <= pref + dist) {
-      auto vec = points_[i + 1] - points_[i];
+      auto vec = points_[i + 1].point - points_[i].point;
       double k = (len - pref) / dist;
-      return points_[i] + vec * k;
+      return RoutePoint{
+        segments_[i].segment.Start + vec * k,
+        i,
+        len,
+        len - pref
+      };
     }
     pref += dist;
   }

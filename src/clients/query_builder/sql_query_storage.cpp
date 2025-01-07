@@ -14,6 +14,21 @@ namespace marine_navi::clients::query_builder {
 
 namespace {
 
+std::string PolylineVarToString(const common::Polyline& polyline) {
+  std::stringstream ss;
+  ss << std::fixed << std::setprecision(3) << "MakeLine(";
+
+  const auto& points = polyline.Points;
+
+  for(size_t i = 0; i < points.size(); ++i) {
+    ss << "MakePoint(" << points[i].X() << ", " << points[i].Y() << ")";
+    if (i + 1 < points.size()) {
+      ss << ", ";
+    }
+  }
+  return ss.str();  
+}
+
 std::string BaseArgVarToString(const BaseArgVar& var) {
   return std::visit(
       [](const auto& v) -> std::string {
@@ -27,6 +42,16 @@ std::string BaseArgVarToString(const BaseArgVar& var) {
           return ss.str();
         } else if constexpr (std::is_same_v<T, std::string>) {
           return "'" + v + "'";
+        } else if constexpr (std::is_same_v<T, common::Point>) {
+          ss << std::fixed << std::setprecision(3) << "MakePoint(" << v.X() << ", " << v.Y() << ")";
+          return ss.str();
+        } else if constexpr (std::is_same_v<T, common::Segment>) {
+          ss << std::fixed << std::setprecision(3) << "MakeLine(" 
+             << "MakePoint(" << v.Start.X() << ", " << v.Start.Y() << "), "
+             << "MakePoint(" << v.End.X() << ", " << v.End.Y() << "))";
+          return ss.str();
+        } else if constexpr (std::is_same_v<T, common::Polyline>) {
+          return PolylineVarToString(v);
         } else {
           throw std::runtime_error("unknown type");
         }

@@ -7,28 +7,9 @@
 #include <string>
 #include <time.h>
 
-namespace marine_navi {
-namespace Utils {
+namespace marine_navi::common {
 
-struct Point {
-  double& X();
-  double& Y();
-  const double& X() const;
-  const double& Y() const;
-  inline double Length() const { return sqrt(X() * X() + Y() * Y()); }
-
-  double Lat;
-  double Lon;
-};
-
-Point operator+(const Point& lhs, const Point& rhs);
-Point operator-(const Point& lhs, const Point& rhs);
-Point operator*(const Point& p, double x);
-Point operator*(double x, const Point& p);
-
-inline double GetDistance(const Point& lhs, const Point& rhs) {
-  return (lhs-rhs).Length();
-}
+std::string TrimSpace(const std::string& str);
 
 time_t ParseDate(const std::string& repr,
                  const std::string& format = "%Y-%m-%d %H:%M:%S");
@@ -50,5 +31,6 @@ std::string StringFormat(const std::string& format, Args... args) {
 std::string CurrentFormattedTime(
     const std::string& format = "%Y-%m-%d %H:%M:%S");
 
-}  // namespace Utils
-}  // namespace marine_navi
+time_t GetCurrentTime();
+
+}  // namespace marine_navi::common
