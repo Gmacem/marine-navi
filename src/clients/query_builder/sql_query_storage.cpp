@@ -21,7 +21,7 @@ std::string PolylineVarToString(const common::Polyline& polyline) {
   const auto& points = polyline.Points;
 
   for(size_t i = 0; i < points.size(); ++i) {
-    ss << "MakePoint(" << points[i].X() << ", " << points[i].Y() << ")";
+    ss << "MakePoint(" << points[i].X() << ", " << points[i].Y() << ", 4326)";
     if (i + 1 < points.size()) {
       ss << ", ";
     }
