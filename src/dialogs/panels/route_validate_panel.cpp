@@ -101,7 +101,7 @@ void RouteValidatePanel::CreateControls() {
   {
     b_browse_depth_file_button_ = new wxButton(firstPnl, wxID_ANY, _("Browse..."));
     
-    c_danger_height_ = CreateLabeledTextCtrl(firstPanelSizer, _("Danger name, m"), "2");
+    c_danger_height_ = CreateLabeledTextCtrl(firstPanelSizer, _("Danger depth, m"), "2");
     c_engine_power_ = CreateLabeledTextCtrl(firstPanelSizer, _("Engine power, kw"), "1000");
     c_displacement_ = CreateLabeledTextCtrl(firstPanelSizer, _("Displacement, ton"), "5000");
     c_length_ = CreateLabeledTextCtrl(firstPanelSizer, _("Ship length, m"), "100");

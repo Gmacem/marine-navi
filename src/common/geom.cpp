@@ -17,7 +17,7 @@ double deg2rad(double degrees) {
 }
 
 int sign(double x) {
-    if (abs(x) < kEps) return 0;
+    if (std::abs(x) < kEps) return 0;
     return (x < 0) ? -1 : 1;
 }
 
