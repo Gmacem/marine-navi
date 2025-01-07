@@ -31,9 +31,13 @@ void ForecastsLoader::Load() {
     auto forecast = forecastsProvider_->GetForecast();
     auto records = forecastsProvider_->GetRecords();
 
-    int64_t forecastId = db_client_->InsertForecast(forecast.Source);
-    db_client_->InsertForecastRecordBatch(records, forecastId);
-
+    try {
+      int64_t forecastId = db_client_->InsertForecast(forecast.Source);
+      db_client_->InsertForecastRecordBatch(records, forecastId);
+    } catch (SQLite::Exception& ex) {
+      wxLogError(_T("Failed to load forecasts with reason: %s"), ex.what());
+      throw ex;
+    }
     wxLogInfo(_T("Finish esimo loading task\n"));
   });
   future_ = task.get_future();
