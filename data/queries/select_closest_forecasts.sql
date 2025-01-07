@@ -1,5 +1,7 @@
 -- kSelectClosestForecasts
 
+SELECT load_extension('mod_spatialite');
+
 WITH tmp_route(id, geom) AS (
     VALUES $1
 ) 

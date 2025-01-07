@@ -1,5 +1,7 @@
 -- kInsertDepths
 
+SELECT load_extension('mod_spatialite');
+
 DROP TABLE IF EXISTS depths;
 
 CREATE TABLE IF NOT EXISTS depths (

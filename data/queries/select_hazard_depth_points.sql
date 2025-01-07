@@ -1,5 +1,7 @@
 -- kSelectHazardDepthPoints
 
+SELECT load_extension('mod_spatialite');
+
 WITH l AS (
     SELECT $1 as geom
 )
