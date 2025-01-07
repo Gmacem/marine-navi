@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-namespace marine_navi {
+namespace marine_navi::common {
 
 std::string TrimSpace(const std::string& str) {
     const auto str_begin = std::find_if_not(str.begin(), str.end(), [](unsigned char ch) {
@@ -47,4 +47,4 @@ time_t GetCurrentTime() {
   return std::time(nullptr);
 }
 
-}  // namespace marine_navi
+}  // namespace marine_navi::common
