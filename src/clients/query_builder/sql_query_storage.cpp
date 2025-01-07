@@ -43,12 +43,12 @@ std::string BaseArgVarToString(const BaseArgVar& var) {
         } else if constexpr (std::is_same_v<T, std::string>) {
           return "'" + v + "'";
         } else if constexpr (std::is_same_v<T, common::Point>) {
-          ss << std::fixed << std::setprecision(3) << "MakePoint(" << v.X() << ", " << v.Y() << ")";
+          ss << std::fixed << std::setprecision(3) << "MakePoint(" << v.X() << ", " << v.Y() << ", 4326)";
           return ss.str();
         } else if constexpr (std::is_same_v<T, common::Segment>) {
           ss << std::fixed << std::setprecision(3) << "MakeLine(" 
-             << "MakePoint(" << v.Start.X() << ", " << v.Start.Y() << "), "
-             << "MakePoint(" << v.End.X() << ", " << v.End.Y() << "))";
+             << "MakePoint(" << v.Start.X() << ", " << v.Start.Y() << ", 4326), "
+             << "MakePoint(" << v.End.X() << ", " << v.End.Y() << ", 4326))";
           return ss.str();
         } else if constexpr (std::is_same_v<T, common::Polyline>) {
           return PolylineVarToString(v);
