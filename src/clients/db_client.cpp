@@ -75,7 +75,7 @@ void DbClient::InsertForecastRecordBatch(
           SingleArgVar{record.WaveHeight},
           SingleArgVar{record.SwellHeight},
           BaseArgVar{forecastId},
-          BaseArgVar{common::Point{record.Lon, record.Lat}}
+          BaseArgVar{common::Point{record.Lat, record.Lon}}
       };
   };
   std::vector<std::string> queries = MakeBatchQuery(records, query_template, format_func);
