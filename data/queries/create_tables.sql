@@ -1,6 +1,5 @@
 -- kCreateTables
 
-SELECT load_extension('mod_spatialite');
 PRAGMA trusted_schema=1;
 SELECT InitSpatialMetaData()
 WHERE NOT EXISTS (

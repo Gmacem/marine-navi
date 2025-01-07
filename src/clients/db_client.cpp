@@ -171,16 +171,17 @@ std::shared_ptr<SQLite::Database> CreateDatabase(
     auto db = std::make_shared<SQLite::Database>(
         dbPath, SQLite::OPEN_CREATE | SQLite::OPEN_READWRITE);
 
+    db->loadExtension("mod_spatialite.so", nullptr);
     db->exec(query_template.MakeQuery({}));
     return db;
   } catch (SQLite::Exception& ex) {
-    wxLogError(_T("Failed to create datbase with db reason: %s"), ex.what());
+    wxLogError(_T("Failed to create database with reason: %s"), ex.what());
     throw ex;
   } catch (std::exception& ex) {
-    wxLogError(_T("Failed to create datbase with reason: %s"), ex.what());
+    wxLogError(_T("Failed to create database with reason: %s"), ex.what());
     throw ex;
   } catch (...) {
-    wxLogError(_T("Failed to create datbase with unknown reason"));
+    wxLogError(_T("Failed to create database with unknown reason"));
     throw;
   }
 }
