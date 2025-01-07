@@ -141,7 +141,7 @@ void MarineRouteScanner::CrossDetect() {
 }
 
 std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::GetForecastDiagnostic() const {
-  static constexpr double DANGEROUS_DISTANCE_METERS = 1000;
+  static constexpr double DANGEROUS_DISTANCE_METERS = 10000;
   if (!route_data_.DangerHeight.has_value()) {
     return {};
   }
@@ -173,7 +173,8 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
 
     const size_t segment_id = route_points[i].segment_id;
     const auto& segment = route_data_.Route->GetSegments()[segment_id];
-    wxLogInfo("check forecasts for segment %zu, speed %f, danger height %f", segment_id, speed, danger_height);
+    wxLogInfo("check forecasts for segment %zu, speed %f, danger height %f, number of forecasts %zu",
+      segment_id, speed, danger_height, grouped[i].size());
 
     for(const auto& forecast_with_distance : grouped[i]) {
       const auto& forecast = forecast_with_distance.first;
