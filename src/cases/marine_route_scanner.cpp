@@ -152,7 +152,7 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
   std::vector<common::Point> points;
   std::transform(route_points.begin(), route_points.end(), std::back_inserter(points),
                  [](const entities::RoutePoint& route_point) { return route_point.point; });
-  auto forecasts = db_client_->SelectNearestForecasts(points, common::GetCurrentTime(), DANGEROUS_DISTANCE_METERS);
+  auto forecasts = db_client_->SelectNearestForecasts(points, DANGEROUS_DISTANCE_METERS, route_data_.DepartTime);
 
   std::vector<std::vector<std::pair<entities::ForecastPoint, double>>> grouped(route_points.size());
 
