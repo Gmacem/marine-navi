@@ -130,6 +130,7 @@ const std::string& SqlTemplate::GetName() const { return name_; }
 std::string SqlTemplate::MakeQuery(
     const std::vector<ComposedArgVar>& args) const {
   std::stringstream ss;
+  ss << "SELECT load_extension('mod_spatialite');\n";
   for (const auto& token : tokens_) {
     if (std::holds_alternative<int>(token)) {
       int id = std::get<int>(token);
