@@ -1,12 +1,13 @@
 #include "db_client.h"
 
+#include <sqlite3.h>
+#include <wx/filename.h>
+#include <wx/log.h>
+
 #include "ocpn_plugin.h"
 
 #include <iomanip>
 #include <string>
-
-#include <wx/filename.h>
-#include <wx/log.h>
 
 namespace marine_navi::clients {
 
@@ -171,7 +172,7 @@ std::shared_ptr<SQLite::Database> CreateDatabase(
     auto db = std::make_shared<SQLite::Database>(
         dbPath, SQLite::OPEN_CREATE | SQLite::OPEN_READWRITE);
 
-    db->loadExtension("mod_spatialite.so", nullptr);
+    sqlite3_enable_load_extension(db->getHandle(), 1);
     db->exec(query_template.MakeQuery({}));
     return db;
   } catch (SQLite::Exception& ex) {
