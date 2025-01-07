@@ -119,8 +119,6 @@ DbClient::SelectNearestForecasts(
       query_template.MakeQuery(query_builder::ComposeArguments(points_with_id, max_distance, date));
 
   SQLite::Statement st(*db_, query);
-  sqlite3_enable_load_extension(db_->getHandle(), 1);
-
   std::vector<std::tuple<entities::ForecastPoint, double, int>> result;
 
   while (st.executeStep()) {
