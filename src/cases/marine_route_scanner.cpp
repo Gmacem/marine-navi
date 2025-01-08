@@ -148,7 +148,7 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
   double danger_height = route_data_.DangerHeight.value();
   time_t depart_time = route_data_.DepartTime;
 
-  const auto route_points = GetRoutePoints(route_data_.Route, 100);
+  const auto route_points = GetRoutePoints(route_data_.Route, 10000);
   std::vector<common::Point> points;
   std::transform(route_points.begin(), route_points.end(), std::back_inserter(points),
                  [](const entities::RoutePoint& route_point) { return route_point.point; });
@@ -198,7 +198,7 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
 std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::GetDepthDiagnostic() const {
   const auto route = route_data_.Route;
   time_t check_time = common::GetCurrentTime();
-  const auto route_points = GetRoutePoints(route_data_.Route, 10000);
+  const auto route_points = GetRoutePoints(route_data_.Route, 100);
 
   std::optional<entities::DepthGrid> grid;
   if (route_data_.PathToDepthFile.has_value() &&
