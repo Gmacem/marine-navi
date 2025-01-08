@@ -123,19 +123,19 @@ DbClient::SelectNearestForecasts(
 
   while (st.executeStep()) {
     entities::ForecastPoint forecast_point;
-    forecast_point.point = common::Point::FromWktString(st.getColumn(1).getText());
-    forecast_point.started_at = common::ParseDate(st.getColumn(2).getText());
-    forecast_point.end_at = common::ParseDate(st.getColumn(3).getText());
+    forecast_point.point = common::Point::FromWktString(st.getColumn(0).getText());
+    forecast_point.started_at = common::ParseDate(st.getColumn(1).getText());
+    forecast_point.end_at = common::ParseDate(st.getColumn(2).getText());
 
-    auto wave_column = st.getColumn(4);
-    auto swell_columm = st.getColumn(5);
+    auto wave_column = st.getColumn(3);
+    auto swell_columm = st.getColumn(4);
     if (!wave_column.isNull()) {
       forecast_point.wave_height = wave_column.getDouble();
     }
     if (!swell_columm.isNull()) {
       forecast_point.swell_height = swell_columm.getDouble();
     }
-    result.emplace_back(forecast_point, st.getColumn(6).getDouble(), st.getColumn(7).getInt());
+    result.emplace_back(forecast_point, st.getColumn(5).getDouble(), st.getColumn(6).getInt());
   }
   return result;
 }
