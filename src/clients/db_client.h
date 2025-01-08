@@ -30,7 +30,7 @@ public:
   std::vector<std::tuple<entities::ForecastPoint, double, int>>
   SelectNearestForecasts(
       const std::vector<common::Point>& route_points,
-      const double max_distance,
+      const double max_distance_rad,
       const time_t& min_date);
 
   common::Point SelectForecastLocation(int forecast_id);

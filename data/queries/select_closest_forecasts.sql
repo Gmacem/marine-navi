@@ -20,7 +20,7 @@ INNER JOIN
     tmp_route tr
 ON
     ST_Distance(
-        Transform(tr.geom, 3857),
-        Transform(fr.geom, 3857)
+        tr.geom,
+        fr.geom
     ) <= $2
 WHERE fr.started_at >= $3;

@@ -101,7 +101,7 @@ int64_t DbClient::InsertQuery(std::string query) {
 std::vector<std::tuple<entities::ForecastPoint, double, int>>
 DbClient::SelectNearestForecasts(
     const std::vector<common::Point>& route_points,
-    const double max_distance,
+    const double max_distance_rad,
     const time_t& min_date) {
   const std::string kQueryName = "kSelectClosestForecasts";
   const auto& query_template = query_storage_->GetTemplate(kQueryName);
@@ -116,7 +116,7 @@ DbClient::SelectNearestForecasts(
   const std::string date = common::ToString(min_date);
 
   const auto query =
-      query_template.MakeQuery(query_builder::ComposeArguments(points_with_id, max_distance, date));
+      query_template.MakeQuery(query_builder::ComposeArguments(points_with_id, max_distance_rad, date));
 
   SQLite::Statement st(*db_, query);
   std::vector<std::tuple<entities::ForecastPoint, double, int>> result;

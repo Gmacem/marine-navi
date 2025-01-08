@@ -12,14 +12,13 @@ void InsertDepth(const entities::DepthGrid& grid, std::shared_ptr<clients::DbCli
   db_client->InsertDepthPointBatch(points);
 }
 
-std::vector<entities::RoutePoint> GetRoutePoints(const std::shared_ptr<entities::Route>& route) {
-  static constexpr double STEP_DIST_METERS = 100;
+std::vector<entities::RoutePoint> GetRoutePoints(const std::shared_ptr<entities::Route>& route, double step_dist) {
   std::vector<entities::RoutePoint> result;
   
   double total = route->GetDistance();
 
-  for (size_t i = 0; i * STEP_DIST_METERS < total; ++i) {
-    result.emplace_back(route->GetPointFromStart(i * STEP_DIST_METERS));
+  for (size_t i = 0; i * step_dist < total; ++i) {
+    result.emplace_back(route->GetPointFromStart(i * step_dist));
   }
   return result;
 }
@@ -142,17 +141,18 @@ void MarineRouteScanner::CrossDetect() {
 
 std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::GetForecastDiagnostic() const {
   static constexpr double DANGEROUS_DISTANCE_METERS = 10000;
+  static constexpr double DANGEROUS_DISTANCE_RAD = 0.1;
   if (!route_data_.DangerHeight.has_value()) {
     return {};
   }
   double danger_height = route_data_.DangerHeight.value();
   time_t depart_time = route_data_.DepartTime;
 
-  const auto route_points = GetRoutePoints(route_data_.Route);
+  const auto route_points = GetRoutePoints(route_data_.Route, 100);
   std::vector<common::Point> points;
   std::transform(route_points.begin(), route_points.end(), std::back_inserter(points),
                  [](const entities::RoutePoint& route_point) { return route_point.point; });
-  auto forecasts = db_client_->SelectNearestForecasts(points, DANGEROUS_DISTANCE_METERS, route_data_.DepartTime);
+  auto forecasts = db_client_->SelectNearestForecasts(points, DANGEROUS_DISTANCE_RAD, route_data_.DepartTime);
 
   std::vector<std::vector<std::pair<entities::ForecastPoint, double>>> grouped(route_points.size());
 
@@ -198,7 +198,7 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
 std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::GetDepthDiagnostic() const {
   const auto route = route_data_.Route;
   time_t check_time = common::GetCurrentTime();
-  const auto route_points = GetRoutePoints(route_data_.Route);
+  const auto route_points = GetRoutePoints(route_data_.Route, 10000);
 
   std::optional<entities::DepthGrid> grid;
   if (route_data_.PathToDepthFile.has_value() &&
