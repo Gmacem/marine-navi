@@ -7,10 +7,6 @@ namespace marine_navi::cases {
 
 namespace {
 
-void InsertDepth(const entities::DepthGrid& grid, std::shared_ptr<clients::DbClient> db_client) {
-  const auto points = grid.GetAllPoints();
-  db_client->InsertDepthPointBatch(points);
-}
 
 std::vector<entities::RoutePoint> GetRoutePoints(const std::shared_ptr<entities::Route>& route, double step_dist) {
   std::vector<entities::RoutePoint> result;
@@ -23,30 +19,12 @@ std::vector<entities::RoutePoint> GetRoutePoints(const std::shared_ptr<entities:
   return result;
 }
 
-bool IsPointOnRoute(const common::Segment& segment, const common::Point point, double alpha) {
+[[maybe_unused]] bool IsPointOnRoute(const common::Segment& segment, const common::Point point, double alpha) {
   const auto direction = segment.End - segment.Start;
   const auto point_vec = point - segment.Start;
 
   return common::IsInsideOfAngle(direction, point_vec, direction.Rotate(alpha)) ||
          common::IsInsideOfAngle(direction, point_vec, direction.Rotate(-alpha));
-}
-
-bool IsForecastDangerous(const entities::RouteSegment& route_segment,
-                         const entities::ForecastPoint& forecast,
-                         double speed,
-                         time_t expected_time,
-                         double danger_height) {
-  double distance = common::GetHaversineDistance(route_segment.segment.Start, forecast.point);
-  double t = distance / speed;
-  expected_time += t;
-  if (expected_time < forecast.started_at || expected_time > forecast.end_at) {
-    return false;
-  }
-  double alpha = common::CalculateSteeringAngle(speed);
-  if (!IsPointOnRoute(route_segment.segment, forecast.point, alpha)) {
-    return false;
-  }
-  return danger_height < forecast.GetWaveHeight();
 }
 
 double GetSpeed(const RouteData& route_data, const double wave_height) {
@@ -128,66 +106,103 @@ void MarineRouteScanner::CrossDetect() {
   }
 }
 
-std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::GetForecastDiagnostic() const {
-  static constexpr double DANGEROUS_DISTANCE_METERS = 10000;
-  static constexpr double DANGEROUS_DISTANCE_RAD = 0.1;
-  if (!route_data_.DangerHeight.has_value()) {
-    return {};
-  }
-  double danger_height = route_data_.DangerHeight.value();
-  time_t depart_time = route_data_.DepartTime;
-
-  const auto route_points = GetRoutePoints(route_data_.Route, 10000);
+std::vector<MarineRouteScanner::RoutePointWithForecast> MarineRouteScanner::GetRouteInfo() const {
+  const double kForecastStepMeters = 10000;
+  const double kDangerousDistanceRad = 0.1;
+  const int64_t kForecastValidTime = 6*60*60; // maximum time the forecast is valid
+  const double kMidPointDistance = 100;
+  const auto route_points = GetRoutePoints(route_data_.Route, kForecastStepMeters);
   std::vector<common::Point> points;
   std::transform(route_points.begin(), route_points.end(), std::back_inserter(points),
                  [](const entities::RoutePoint& route_point) { return route_point.point; });
-  auto forecasts = db_client_->SelectNearestForecasts(points, DANGEROUS_DISTANCE_RAD, route_data_.DepartTime);
-
+  auto forecasts = db_client_->SelectNearestForecasts(points, kDangerousDistanceRad, route_data_.DepartTime);
   std::vector<std::vector<std::pair<entities::ForecastPoint, double>>> grouped(route_points.size());
-
   for(const auto& forecast : forecasts) {
     int id = std::get<2>(forecast);
     grouped[id].emplace_back(std::get<0>(forecast), std::get<1>(forecast));
   }
+  time_t cur_time = route_data_.DepartTime;
+  double cur_speed = route_data_.Speed.value();
 
-  std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
-  time_t cur_time = depart_time;
+  std::vector<MarineRouteScanner::RoutePointWithForecast> result;
 
-  for(size_t i = 0; i < grouped.size(); ++i) {
-    double wave_height = 0;
-    for(const auto& forecast_with_distance : grouped[i]) {
-      wave_height = std::max(wave_height, forecast_with_distance.first.GetWaveHeight());
-    }
-    double speed = GetSpeed(route_data_, wave_height);
-
-    const size_t segment_id = route_points[i].segment_id;
-    const auto& segment = route_data_.Route->GetSegments()[segment_id];
-    wxLogInfo("check forecasts for segment %zu, speed %f, danger height %f, number of forecasts %zu",
-      segment_id, speed, danger_height, grouped[i].size());
-
-    for(const auto& forecast_with_distance : grouped[i]) {
-      const auto& forecast = forecast_with_distance.first;
-      if (IsForecastDangerous(segment, forecast, speed, cur_time, danger_height)) {
-        result.push_back(entities::diagnostic::MakeHighWavesHazardPoint(
-            forecast.point,
-            speed,
-            cur_time,
-            forecast.GetWaveHeight()));
+  for(size_t i = 0; i < route_points.size(); ++i) {
+    const auto& route_point = route_points[i];
+    const auto& forecasts = grouped[i];
+    time_t forecast_delta_time = std::numeric_limits<time_t>::max();
+    std::optional<entities::ForecastPoint> nearest_forecast;
+    for(const auto& forecast : forecasts) {
+      time_t delta = cur_time - forecast.first.end_at;
+      if (forecast.first.end_at <= cur_time 
+          && forecast_delta_time > delta
+          && delta < kForecastValidTime) { 
+        forecast_delta_time = delta;
+        nearest_forecast = forecast.first;
       }
     }
 
-    if (i + 1 < route_points.size()) {
-      cur_time += common::GetHaversineDistance(route_points[i].point, route_points[i+1].point) / speed;
+    if (nearest_forecast.has_value()) {
+      cur_speed = GetSpeed(route_data_, nearest_forecast->GetWaveHeight());
     }
+
+    // add mid point for depth check
+    if (i > 0) {
+      const auto& previous_point = route_points[i - 1];
+      for(int j = 1; previous_point.distance_from_start_route + kMidPointDistance * j < route_point.distance_from_start_route; ++j) {
+        double delta = kMidPointDistance * j;
+        double distance_from_start = previous_point.distance_from_start_route + delta;
+        const auto mid_point = route_data_.Route->GetPointFromStart(distance_from_start);
+        const time_t delta_time = delta / cur_speed;
+
+        result.push_back(RoutePointWithForecast{
+          .route_point = mid_point,
+          .nearest_forecast = nearest_forecast,
+          .speed = cur_speed,
+          .expected_time = cur_time + delta_time
+        });
+      }
+      cur_time += (route_point.distance_from_start_route - previous_point.distance_from_start_route) / cur_speed;
+    }
+    result.push_back(RoutePointWithForecast{
+      .route_point = route_point,
+      .nearest_forecast = nearest_forecast,
+      .speed = cur_speed,
+      .expected_time = cur_time,
+    });
   }
 
   return result;
 }
 
-std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::GetDepthDiagnostic() const {
-  const auto route = route_data_.Route;
-  time_t check_time = common::GetCurrentTime();
-  const auto route_points = GetRoutePoints(route_data_.Route, 100);
+std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::GetForecastDiagnostic(
+  const std::vector<RoutePointWithForecast>& route, const time_t check_time
+) const {
+  std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
+
+  for(const auto& route_point : route) {
+    const auto& nearest_forecast = route_point.nearest_forecast;
+
+    if (!nearest_forecast.has_value()) {
+      continue;
+    }
+
+    if (nearest_forecast->GetWaveHeight() > route_data_.DangerHeight.value()) {
+      result.push_back(entities::diagnostic::MakeHighWavesHazardPoint(
+        route_point.route_point.point,
+        check_time,
+        route_point.expected_time,
+        nearest_forecast->GetWaveHeight())
+      );
+    }
+  }
+  return result;
+}
+
+std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::GetDepthDiagnostic(
+  const std::vector<RoutePointWithForecast>& route,
+  const time_t check_time
+) const {
+  const size_t kLimitReturnSize = 100;
 
   std::optional<entities::DepthGrid> grid;
   if (route_data_.PathToDepthFile.has_value() &&
@@ -200,15 +215,19 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
 
   std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
 
-  for(const auto& route_point : route_points) {
-    const auto depth_point = grid->GetNearestDepthPoint(route_point.point);
+  for(const auto& route_point : route) {
+    const auto depth_point = grid->GetNearestDepthPoint(route_point.route_point.point);
     if (depth_point.has_value() && -depth_point->Depth < route_data_.ShipDraft.value()) {
       result.push_back(entities::diagnostic::MakeDepthHazardPoint(
         depth_point->Point,
         check_time,
-        check_time,
+        route_point.expected_time,
         depth_point->Depth
       ));
+    }
+
+    if (result.size() > kLimitReturnSize) {
+      break;
     }
   }
 
@@ -216,8 +235,10 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
 }
 
 entities::diagnostic::RouteValidateDiagnostic MarineRouteScanner::DoCrossDetect() const {
-  const auto diagnostic_forecast = GetForecastDiagnostic();
-  const auto diagnostic_depth = GetDepthDiagnostic();
+  const auto route_info = GetRouteInfo();
+  const time_t check_time = common::GetCurrentTime();
+  const auto diagnostic_forecast = GetForecastDiagnostic(route_info, check_time);
+  const auto diagnostic_depth = GetDepthDiagnostic(route_info, check_time);
 
   if (diagnostic_forecast.empty() && diagnostic_depth.empty()) { 
     return entities::diagnostic::RouteValidateDiagnostic{

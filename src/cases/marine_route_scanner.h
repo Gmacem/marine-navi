@@ -47,8 +47,21 @@ public:
   std::optional<entities::diagnostic::RouteValidateDiagnostic> GetDiagnostic();
 
 private:
-  std::vector<entities::diagnostic::DiagnosticHazardPoint> GetForecastDiagnostic() const;
-  std::vector<entities::diagnostic::DiagnosticHazardPoint> GetDepthDiagnostic() const;
+  struct RoutePointWithForecast {
+    entities::RoutePoint route_point;
+    std::optional<entities::ForecastPoint> nearest_forecast;
+
+    double speed;
+    time_t expected_time;
+  };
+  std::vector<RoutePointWithForecast> GetRouteInfo() const;
+
+  std::vector<entities::diagnostic::DiagnosticHazardPoint> GetForecastDiagnostic(
+    const std::vector<RoutePointWithForecast>& route,
+    const time_t check_time) const;
+  std::vector<entities::diagnostic::DiagnosticHazardPoint> GetDepthDiagnostic(
+    const std::vector<RoutePointWithForecast>& route,
+    const time_t check_time) const;
   entities::diagnostic::RouteValidateDiagnostic DoCrossDetect() const;
 
 private:
