@@ -42,7 +42,6 @@ public:
   bool IsShow();
 
   bool CheckLandIntersection(const Point& p1, const Point& p2) const;
-  bool CheckDepth(const entities::DepthGrid& grid, const Point& p, double draft) const;
   void CrossDetect();
 
   std::optional<entities::diagnostic::RouteValidateDiagnostic> GetDiagnostic();

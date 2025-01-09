@@ -110,18 +110,6 @@ bool MarineRouteScanner::CheckLandIntersection(const Point& p1,
                                   maxCorner.Lon);
 }
 
-bool MarineRouteScanner::CheckDepth(const entities::DepthGrid& grid, const Point& p,
-                                     double draft) const {
-  auto depth = grid.GetDepth(p);
-
-  if (depth.has_value()) {
-    return -depth.value() > draft;  // TODO perhaps it needs to be taken into
-                                    // account with some margin
-  }
-
-  return true;
-}
-
 std::optional<entities::diagnostic::RouteValidateDiagnostic> MarineRouteScanner::GetDiagnostic() {
   std::lock_guard lock(mutex_);
   return diagnostic_;
@@ -219,7 +207,7 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
         check_time,
         check_time,
         depth_point->Depth
-      )); // TODO: check time
+      ));
     }
   }
 

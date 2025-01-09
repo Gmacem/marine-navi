@@ -24,7 +24,8 @@ std::string TrimSpace(const std::string& str) {
 
 time_t ParseDate(const std::string& repr, const std::string& format) {
   struct tm tm;
-  strptime(repr.data(), format.data(), &tm);
+  std::istringstream ss(repr);
+  ss >> std::get_time(&tm, format.data());
   return mktime(&tm);
 }
 
