@@ -25,9 +25,10 @@ std::vector<entities::RoutePoint> GetRoutePoints(const std::shared_ptr<entities:
 
 bool IsPointOnRoute(const common::Segment& segment, const common::Point point, double alpha) {
   const auto direction = segment.End - segment.Start;
+  const auto point_vec = point - segment.Start;
 
-  return common::IsInsideOfAngle(direction, point, direction.Rotate(alpha)) ||
-         common::IsInsideOfAngle(direction, point, direction.Rotate(-alpha));
+  return common::IsInsideOfAngle(direction, point_vec, direction.Rotate(alpha)) ||
+         common::IsInsideOfAngle(direction, point_vec, direction.Rotate(-alpha));
 }
 
 bool IsForecastDangerous(const entities::RouteSegment& route_segment,
