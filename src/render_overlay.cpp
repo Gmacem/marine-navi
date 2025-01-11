@@ -24,12 +24,23 @@ void RenderOverlay::RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp,
   dc.SetPen(pen);
 
   auto cross = checkPathCase_->GetDiagnostic();
+
+  for(auto& waypoint : diagnostic_waypoints_) {
+    DeleteSingleWaypoint(waypoint.m_GUID);
+  }
+
   if (cross.has_value() && cross->result == entities::diagnostic::RouteValidateDiagnostic::DiagnosticResultType::kWarning) {
     wxPoint2DDouble crossCenter;
-    for(const auto& hazard_point : cross->hazard_points) {
+    for(size_t i = 0; i < cross->hazard_points.size(); ++i) {
+      const auto& hazard_point = cross->hazard_points[i];
       const auto location = hazard_point.GetLocation();
-      GetDoubleCanvasPixLL(vp, &crossCenter, location.Lat, location.Lon);
-      dc.DrawCircle(round(crossCenter.m_x), round(crossCenter.m_y), 10);
+      const wxString guid = "hazard_points_" + std::to_string(i);
+      PlugIn_Waypoint_Ex waypoint{location.Lat, location.Lon, wxEmptyString, wxEmptyString, guid};
+      waypoint.m_MarkDescription = hazard_point.GetMessage();
+      waypoint.RangeRingColor = wxColor(255, 0, 0);
+      AddSingleWaypointEx(&waypoint);
+      // GetDoubleCanvasPixLL(vp, &crossCenter, location.Lat, location.Lon);
+      // dc.DrawCircle(round(crossCenter.m_x), round(crossCenter.m_y), 10);
     }
   }
 }

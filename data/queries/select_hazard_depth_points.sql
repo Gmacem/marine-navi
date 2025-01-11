@@ -13,5 +13,5 @@ INNER JOIN
 ON 
     ST_Within(d.geom, triangles.geom) 
 WHERE 
-    d.depth <= triangles.height
+    -d.depth <= triangles.height
 ORDER BY triangles.id ASC;

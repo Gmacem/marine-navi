@@ -100,10 +100,8 @@ void RouteValidatePanel::CreateControls() {
   wxBoxSizer* firstPanelSizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer* secondPanelSizer = new wxBoxSizer(wxVERTICAL);
 
-  {
-    b_browse_depth_file_button_ = new wxButton(firstPnl, wxID_ANY, _("Browse..."));
-    
-    c_danger_height_ = CreateLabeledTextCtrl(firstPanelSizer, _("Danger depth, m"), "2");
+  {    
+    c_danger_height_ = CreateLabeledTextCtrl(firstPanelSizer, _("Danger height, m"), "2");
     c_engine_power_ = CreateLabeledTextCtrl(firstPanelSizer, _("Engine power, kw"), "1000");
     c_displacement_ = CreateLabeledTextCtrl(firstPanelSizer, _("Displacement, ton"), "5000");
     c_length_ = CreateLabeledTextCtrl(firstPanelSizer, _("Ship length, m"), "100");
@@ -134,6 +132,7 @@ void RouteValidatePanel::CreateControls() {
     splitter->Add(firstPnl, 1, wxALL | wxEXPAND, 5);
   }
   {
+    b_browse_depth_file_button_ = new wxButton(secondPnl, wxID_ANY, _("Browse..."));
     b_refresh_route_list_ = new wxButton(secondPnl, wxID_ANY, _("Refresh"));
     route_list_box_ = new wxListBox(secondPnl, wxID_ANY);
     secondPanelSizer->Add(
@@ -143,7 +142,7 @@ void RouteValidatePanel::CreateControls() {
 
     c_depth_file_ = CreateBrowseFileTextCtrl(b_browse_depth_file_button_,
                                            secondPanelSizer, _("Depth file"));
-    b_load_depth_ = new wxButton(this, wxID_ANY, _("Load depth"));
+    b_load_depth_ = new wxButton(secondPnl, wxID_ANY, _("Load depth"));
 
     secondPanelSizer->Add(b_load_depth_, 0, wxALL, 5);
     secondPnl->SetSizer(secondPanelSizer);
