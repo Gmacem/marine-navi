@@ -203,11 +203,13 @@ void DbClient::InsertDepthPointBatch(const std::vector<entities::DepthPoint>& re
   };
   const auto queries = MakeBatchQuery(records, query_template, format_func);
 
-  SQLite::Transaction trans(*db_);
-  for(const auto& query : queries) {
+  // SQLite::Transaction trans(*db_);
+  for(size_t i = 0; i < queries.size(); ++i) {
+    const auto& query = queries[i];
     db_->exec(query);
+    wxLogInfo(_T("depth load progress %zu/%zu"), (i+1), queries.size());
   }
-  trans.commit();
+  // trans.commit();
 }
 
 std::vector<std::vector<entities::DepthPoint> > DbClient::SelectHazardDepthPoints(std::vector<common::Polygon> triangles, double height) {
