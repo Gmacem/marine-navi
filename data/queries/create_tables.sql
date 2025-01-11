@@ -35,3 +35,19 @@ WHERE NOT EXISTS (
     WHERE f_table_name = 'forecast_records' 
       AND f_geometry_column = 'geom'
 );
+
+CREATE TABLE IF NOT EXISTS depths (
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    depth   REAL NOT NULL,
+);
+
+SELECT AddGeometryColumn(
+    'depths', 'geom', 4326, 'POINT', 'XY'
+), CreateSpatialIndex('depths', 'geom')
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM geometry_columns 
+    WHERE f_table_name = 'depths' 
+      AND f_geometry_column = 'geom'
+);

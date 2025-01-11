@@ -2,20 +2,18 @@
 
 SELECT load_extension('mod_spatialite');
 
-WITH l AS (
-    SELECT $1 as geom
+WITH triangles(id, geom, height) AS (
+    VALUES $1
 )
 SELECT 
-    p.depth,
-    AsText(p.geom) AS point_wkt,
-    ST_Distance(
-        Transform(p.geom, 3857),
-        Transform(l.geom, 3857)
-    ) AS distance_meters
-FROM 
-    depths p
+    ST_AsText(d.geom) as geom 
+    d.depth, 
+    triangles.id 
+FROM depths d 
+INNER JOIN 
+    triangles
+ON 
+    ST_Within(d.geom, triangles.geom) 
 WHERE 
-    ST_Distance(
-        Transform(p.geom, 3857),
-        Transform(l.geom, 3857)
-    ) <= $2;
+    d.depth <= triangles.height
+ORDER BY triangles.id ASC;

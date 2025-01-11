@@ -49,6 +49,19 @@ double GetSpeed(const RouteData& route_data, const double wave_height) {
   return r * route_data.Speed.value();
 }
 
+std::vector<entities::diagnostic::DiagnosticHazardPoint> FilterDiagnosticPoints(
+  const std::vector<entities::diagnostic::DiagnosticHazardPoint>& points, double distance_between_points) {
+  std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
+
+  for(const auto& point : points) {
+    if (result.size() == 0 
+        || common::GetHaversineDistance(result.back().GetLocation(), point.GetLocation()) >= distance_between_points) {
+      result.push_back(point);
+    }
+  }
+  return result;
+}
+
 } // namespace
 
 MarineRouteScanner::MarineRouteScanner(std::shared_ptr<clients::DbClient> dbClient)
@@ -188,7 +201,7 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
 
     if (nearest_forecast->GetWaveHeight() > route_data_.DangerHeight.value()) {
       result.push_back(entities::diagnostic::MakeHighWavesHazardPoint(
-        route_point.route_point.point,
+        route_point.nearest_forecast->point,
         check_time,
         route_point.expected_time,
         nearest_forecast->GetWaveHeight())
@@ -202,8 +215,6 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
   const std::vector<RoutePointWithForecast>& route,
   const time_t check_time
 ) const {
-  const size_t kLimitReturnSize = 100;
-
   std::optional<entities::DepthGrid> grid;
   if (route_data_.PathToDepthFile.has_value() &&
       route_data_.ShipDraft.has_value()) {
@@ -225,10 +236,6 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
         depth_point->Depth
       ));
     }
-
-    if (result.size() > kLimitReturnSize) {
-      break;
-    }
   }
 
   return result;
@@ -247,8 +254,9 @@ entities::diagnostic::RouteValidateDiagnostic MarineRouteScanner::DoCrossDetect(
     };
   }
 
-  auto hazard_points = diagnostic_depth;
-  hazard_points.insert(hazard_points.end(), diagnostic_forecast.begin(), diagnostic_forecast.end());
+  auto hazard_points = FilterDiagnosticPoints(diagnostic_depth, 10000);
+  const auto filtered_diagnostic_forecast = FilterDiagnosticPoints(diagnostic_forecast, 10000);
+  hazard_points.insert(hazard_points.end(), filtered_diagnostic_forecast.begin(), filtered_diagnostic_forecast.end());
 
   return entities::diagnostic::RouteValidateDiagnostic{
     .result = entities::diagnostic::RouteValidateDiagnostic::DiagnosticResultType::kWarning,

@@ -26,7 +26,7 @@ DiagnosticHazardPoint MakeDepthHazardPoint(
         location,
         check_time,
         expected_time_of_troubles,
-        common::StringFormat("dangerous depth {}", depth)
+        common::StringFormat("dangerous depth %lf", depth)
     );
 }
 
@@ -40,7 +40,7 @@ DiagnosticHazardPoint MakeHighWavesHazardPoint(
         location,
         check_time,
         expected_time_of_troubles,
-        common::StringFormat("dangerous wave height {}", wave_height)
+        common::StringFormat("dangerous wave height %lf", wave_height)
     );
 }
 

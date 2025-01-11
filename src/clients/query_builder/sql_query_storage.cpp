@@ -26,7 +26,23 @@ std::string PolylineVarToString(const common::Polyline& polyline) {
       ss << ", ";
     }
   }
+  ss << ")";
   return ss.str();  
+}
+
+std::string PolygonVarToString(const common::Polygon& polygon) {
+  if (polygon.Points.empty()) {
+    std::runtime_error("polygn is empty");
+  }
+  std::stringstream ss;
+  ss << std::fixed << std::setprecision(3) << "MakePolygon(GeomFromText('LINESTRING(";
+
+  const auto& points = polygon.Points;
+  for(size_t i = 0; i < points.size(); ++i) {
+    ss << points[i].X() << " " << points[i].Y() << ", ";
+  }
+  ss << points[0].X() << " " << points[0].Y() << ")'))";
+  return ss.str();
 }
 
 std::string BaseArgVarToString(const BaseArgVar& var) {
@@ -52,6 +68,8 @@ std::string BaseArgVarToString(const BaseArgVar& var) {
           return ss.str();
         } else if constexpr (std::is_same_v<T, common::Polyline>) {
           return PolylineVarToString(v);
+        } else if constexpr (std::is_same_v<T, common::Polygon>) {
+          return PolygonVarToString(v);
         } else {
           throw std::runtime_error("unknown type");
         }

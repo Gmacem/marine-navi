@@ -16,7 +16,8 @@ using BaseArgVar = std::variant<
     std::string,
     common::Point,
     common::Segment,
-    common::Polyline>;
+    common::Polyline,
+    common::Polygon>;
 
 using SingleArgVar = std::variant<BaseArgVar, std::optional<BaseArgVar> >;
 using ComposedArgVar = std::variant<

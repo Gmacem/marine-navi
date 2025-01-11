@@ -32,10 +32,10 @@ public:
       const std::vector<common::Point>& route_points,
       const double max_distance_rad,
       const time_t& min_date);
-
   common::Point SelectForecastLocation(int forecast_id);
 
   void InsertDepthPointBatch(const std::vector<entities::DepthPoint>& depth_points);
+  std::vector<entities::DepthPoint> SelectDepthHazardPoints(std::vector<>, double height);
 
   // @return A list of hazard points along with their distances to the route
   std::vector<std::tuple<entities::DepthPoint, double> > SelectHazardDepthPoints(const common::Polyline& polyline);

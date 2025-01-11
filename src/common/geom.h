@@ -42,6 +42,10 @@ struct Polyline {
   std::vector<Point> Points;
 };
 
+struct Polygon {
+  std::vector<Point> Points;
+};
+
 double GetHaversineDistance(Point lhs, Point rhs);
 double GetHaversineDistance(const Segment& segment);
 
