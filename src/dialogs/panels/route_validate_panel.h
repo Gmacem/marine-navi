@@ -20,8 +20,8 @@ public:
 
 private:
   void CreateControls();
-  wxTextCtrl* CreateLabeledTextCtrl(wxSizer* sizer, const wxString& label, std::optional<wxString> default_value = std::nullopt);
-  wxTextCtrl* CreateBrowseFileTextCtrl(wxButton* browse_button, wxSizer* sizer,
+  wxTextCtrl* CreateLabeledTextCtrl(wxWindow *parent, wxSizer* sizer, const wxString& label, std::optional<wxString> default_value = std::nullopt);
+  wxTextCtrl* CreateBrowseFileTextCtrl(wxWindow *parent, wxButton* browse_button, wxSizer* sizer,
                                        const wxString& label);
   void BindEvents();
   void UnbindEvents();

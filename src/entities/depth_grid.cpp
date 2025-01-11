@@ -84,7 +84,7 @@ std::vector<entities::DepthPoint> DepthGrid::GetAllPoints() const {
             i * cellSize_ + minLat_,
             j * cellSize_ + minLon_
           },
-          static_cast<double>(data_[i][j])
+          static_cast<double>(data_[data_.size() - i - 1][j])
       });
     }
   }

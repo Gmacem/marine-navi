@@ -30,10 +30,10 @@ std::vector<entities::RoutePoint> GetRoutePoints(const std::shared_ptr<entities:
 std::tuple<common::Polygon, common::Polygon> MakeDepthCheckPolygon(const common::Segment& segment, double alpha) {
   const auto direction = segment.End - segment.Start;
   const auto poly1 = common::Polygon{
-    {segment.Start, segment.End, segment.Start + direction.Rotate(alpha), segment.Start},
+    {segment.Start, segment.End, segment.Start + direction.Rotate(alpha)},
   };
   const auto poly2 = common::Polygon{
-    {segment.Start, segment.End, segment.Start + direction.Rotate(-alpha), segment.Start}, 
+    {segment.Start, segment.End, segment.Start + direction.Rotate(-alpha)}, 
   };
 
   return {poly1, poly2};
@@ -170,22 +170,8 @@ std::vector<MarineRouteScanner::RoutePointWithForecast> MarineRouteScanner::GetR
       cur_speed = GetSpeed(route_data_, nearest_forecast->GetWaveHeight());
     }
 
-    // add mid point for depth check
     if (i > 0) {
       const auto& previous_point = route_points[i - 1];
-      for(int j = 1; previous_point.distance_from_start_route + kMidPointDistance * j < route_point.distance_from_start_route; ++j) {
-        double delta = kMidPointDistance * j;
-        double distance_from_start = previous_point.distance_from_start_route + delta;
-        const auto mid_point = route_data_.Route->GetPointFromStart(distance_from_start);
-        const time_t delta_time = delta / cur_speed;
-
-        result.push_back(RoutePointWithForecast{
-          .route_point = mid_point,
-          .nearest_forecast = nearest_forecast,
-          .speed = cur_speed,
-          .expected_time = cur_time + delta_time
-        });
-      }
       cur_time += (route_point.distance_from_start_route - previous_point.distance_from_start_route) / cur_speed;
     }
     result.push_back(RoutePointWithForecast{
