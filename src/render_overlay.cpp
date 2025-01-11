@@ -25,13 +25,14 @@ void RenderOverlay::RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp,
 
   auto cross = checkPathCase_->GetDiagnostic();
 
-  const auto guids = GetWaypointGUIDArray();
-  for(const auto& guid : guids) {
-    wxLogInfo(_T("guid waypoint '%s'"), guid.ToStdString().c_str());
-  }
+  const std::string kPrefixGuid = "hazard_points_";
 
-  for(auto& waypoint : diagnostic_waypoints_) {
-    DeleteSingleWaypoint(waypoint.m_GUID);
+  auto guids = GetWaypointGUIDArray();
+  for(auto& guid : guids) {
+    wxLogInfo(_T("guid waypoint '%s'"), guid.ToStdString().c_str());
+    if (guid.Contains(kPrefixGuid)) {
+      DeleteSingleWaypoint(guid);
+    }
   }
 
   if (cross.has_value() && cross->result == entities::diagnostic::RouteValidateDiagnostic::DiagnosticResultType::kWarning) {
@@ -39,13 +40,11 @@ void RenderOverlay::RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp,
     for(size_t i = 0; i < cross->hazard_points.size(); ++i) {
       const auto& hazard_point = cross->hazard_points[i];
       const auto location = hazard_point.GetLocation();
-      const wxString guid = "hazard_points_" + std::to_string(i);
+      const wxString guid = kPrefixGuid + std::to_string(i);
       PlugIn_Waypoint_Ex waypoint{location.Lat, location.Lon, wxEmptyString, wxEmptyString, guid};
       waypoint.m_MarkDescription = hazard_point.GetMessage();
       waypoint.RangeRingColor = wxColor(255, 0, 0);
       AddSingleWaypointEx(&waypoint, false);
-      // GetDoubleCanvasPixLL(vp, &crossCenter, location.Lat, location.Lon);
-      // dc.DrawCircle(round(crossCenter.m_x), round(crossCenter.m_y), 10);
     }
   }
 }
