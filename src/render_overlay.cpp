@@ -25,6 +25,11 @@ void RenderOverlay::RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp,
 
   auto cross = checkPathCase_->GetDiagnostic();
 
+  const auto guids = GetWaypointGUIDArray();
+  for(const auto& guid : guids) {
+    wxLogInfo(_T("guid waypoint '%s'"), guid.ToStdString().c_str());
+  }
+
   for(auto& waypoint : diagnostic_waypoints_) {
     DeleteSingleWaypoint(waypoint.m_GUID);
   }
@@ -38,7 +43,7 @@ void RenderOverlay::RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp,
       PlugIn_Waypoint_Ex waypoint{location.Lat, location.Lon, wxEmptyString, wxEmptyString, guid};
       waypoint.m_MarkDescription = hazard_point.GetMessage();
       waypoint.RangeRingColor = wxColor(255, 0, 0);
-      AddSingleWaypointEx(&waypoint);
+      AddSingleWaypointEx(&waypoint, false);
       // GetDoubleCanvasPixLL(vp, &crossCenter, location.Lat, location.Lon);
       // dc.DrawCircle(round(crossCenter.m_x), round(crossCenter.m_y), 10);
     }
