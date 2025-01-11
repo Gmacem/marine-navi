@@ -25,7 +25,8 @@ double CalculateSteeringAngle(double v, double v_nominal) {
     const double degrees_to_radians = M_PI / 180.0;
     double alpha_degrees = 1.0 * (v / v_nominal);
     double alpha_radians = alpha_degrees * degrees_to_radians;
-    return alpha_radians;
+
+    return std::min(alpha_radians, M_PI);
 }
 
 } // namespace marine_navi::common

@@ -22,4 +22,5 @@ double KnotsToMetersPerSecond(double knots);
 double FeetToMeters(double ft);
 
 double CalculateSteeringAngle(double v, double v_nominal = 2.0);
+
 } // namespace marine_navi::common

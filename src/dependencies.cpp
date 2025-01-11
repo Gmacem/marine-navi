@@ -2,8 +2,9 @@
 
 #include <wx/log.h>
 
-#include "cases/marine_route_scanner.h"
+#include "cases/depth_loader.h"
 #include "cases/forecasts_loader.h"
+#include "cases/marine_route_scanner.h"
 #include "clients/db_client.h"
 #include "clients/query_builder/sql_query_storage.h"
 #include "clients/esimo.h"
@@ -32,6 +33,7 @@ Dependencies CreateDependencies(wxWindow* ocpnCanvasWindow) {
   deps.sql_query_storage = MakeSqlQueryStorage();
   deps.db = clients::CreateDatabase("marinenavi.db", deps.sql_query_storage);
   deps.db_client = std::make_shared<clients::DbClient>(deps.db, deps.sql_query_storage);
+  deps.depth_loader = std::make_shared<cases::DepthLoader>(deps.db_client);
   deps.forecasts_loader =
       std::make_shared<cases::ForecastsLoader>(deps.db_client);
   deps.marine_route_scanner =

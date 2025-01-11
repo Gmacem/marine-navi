@@ -7,6 +7,7 @@
 
 #include <ocpn_plugin.h>
 
+#include <cases/depth_loader.h>
 #include <cases/forecasts_loader.h>
 #include <cases/marine_route_scanner.h>
 #include <common/marine_math.h>
@@ -85,6 +86,7 @@ RouteValidatePanel::RouteValidatePanel(wxWindow* parent,
       diagnostic_panel_(diagnostic_panel),
       canvas_window_(dependencies.ocpn_canvas_window),
       marine_route_scanner_(dependencies.marine_route_scanner),
+      depth_loader_(dependencies.depth_loader),
       forecasts_loader_(dependencies.forecasts_loader) {
   CreateControls();
   BindEvents();
@@ -128,8 +130,6 @@ void RouteValidatePanel::CreateControls() {
       firstPanelSizer->Add(datetime);
     }
 
-    c_depth_file_ = CreateBrowseFileTextCtrl(b_browse_depth_file_button_,
-                                           firstPanelSizer, _("Depth file"));
     firstPnl->SetSizer(firstPanelSizer);
     splitter->Add(firstPnl, 1, wxALL | wxEXPAND, 5);
   }
@@ -140,6 +140,12 @@ void RouteValidatePanel::CreateControls() {
         new wxStaticText(secondPnl, wxID_ANY, _("Route name")));
     secondPanelSizer->Add(route_list_box_, 1, wxALL | wxEXPAND, 5);
     secondPanelSizer->Add(b_refresh_route_list_, 0, wxALL, 5);
+
+    c_depth_file_ = CreateBrowseFileTextCtrl(b_browse_depth_file_button_,
+                                           secondPanelSizer, _("Depth file"));
+    b_load_depth_ = new wxButton(this, wxID_ANY, _("Load depth"));
+
+    secondPanelSizer->Add(b_load_depth_, 0, wxALL, 5);
     secondPnl->SetSizer(secondPanelSizer);
     splitter->Add(secondPnl, 1, wxALL | wxEXPAND, 5);
   }
@@ -184,6 +190,7 @@ wxTextCtrl* RouteValidatePanel::CreateBrowseFileTextCtrl(
 void RouteValidatePanel::BindEvents() {
   b_scan_route_->Bind(wxEVT_BUTTON, &RouteValidatePanel::OnCheckPathClicked,
                     this);
+  b_load_depth_->Bind(wxEVT_BUTTON, &RouteValidatePanel::OnLoadDepthClicked, this);
   b_load_forecasts_->Bind(wxEVT_BUTTON,
                         &RouteValidatePanel::OnLoadForecastsClicked, this);
   b_browse_depth_file_button_->Bind(
@@ -195,6 +202,8 @@ void RouteValidatePanel::BindEvents() {
 void RouteValidatePanel::UnbindEvents() {
   b_scan_route_->Unbind(wxEVT_BUTTON, &RouteValidatePanel::OnCheckPathClicked,
                       this);
+  b_load_depth_->Unbind(wxEVT_BUTTON,
+                        &RouteValidatePanel::OnLoadDepthClicked, this);
   b_load_forecasts_->Unbind(wxEVT_BUTTON,
                           &RouteValidatePanel::OnLoadForecastsClicked, this);
   b_browse_depth_file_button_->Unbind(
@@ -246,10 +255,6 @@ void RouteValidatePanel::OnCheckPathClicked(wxCommandEvent&) {
   if (route_data.ShipDraft.has_value()) {
     route_data.ShipDraft = common::FeetToMeters(route_data.ShipDraft.value());
   }
-  route_data.PathToDepthFile =
-      c_depth_file_->IsEmpty()
-          ? std::nullopt
-          : std::optional<std::string>(c_depth_file_->GetValue().mb_str());
   route_data.DepartTime = GetTimeFromCtrls(d_route_date_, t_route_time_);
 
   marine_route_scanner_->SetPathData(route_data);
@@ -262,6 +267,19 @@ void RouteValidatePanel::OnCheckPathClicked(wxCommandEvent&) {
   }
 
   RequestRefresh(canvas_window_);
+}
+
+
+void RouteValidatePanel::OnLoadDepthClicked(wxCommandEvent&) {
+  try {
+    if (c_depth_file_->IsEmpty()) {
+      throw std::runtime_error("depth file is not selected");
+    }
+    const auto filepath = c_depth_file_->GetValue().ToStdString();
+    depth_loader_->Load(filepath);
+  } catch (const std::exception& ex) {
+    fprintf(stderr, "Failed to load depth: %s\n", ex.what());
+  }
 }
 
 void RouteValidatePanel::OnLoadForecastsClicked(wxCommandEvent&) {

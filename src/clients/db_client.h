@@ -35,10 +35,9 @@ public:
   common::Point SelectForecastLocation(int forecast_id);
 
   void InsertDepthPointBatch(const std::vector<entities::DepthPoint>& depth_points);
-  std::vector<entities::DepthPoint> SelectDepthHazardPoints(std::vector<>, double height);
 
-  // @return A list of hazard points along with their distances to the route
-  std::vector<std::tuple<entities::DepthPoint, double> > SelectHazardDepthPoints(const common::Polyline& polyline);
+  // @return A list of hazard points for each triangle
+  std::vector<std::vector<entities::DepthPoint> > SelectHazardDepthPoints(std::vector<common::Polygon> triagnles, double height);
 
 private:
   int64_t InsertQuery(std::string query);

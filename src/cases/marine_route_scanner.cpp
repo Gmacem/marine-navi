@@ -27,6 +27,18 @@ std::vector<entities::RoutePoint> GetRoutePoints(const std::shared_ptr<entities:
          common::IsInsideOfAngle(direction, point_vec, direction.Rotate(-alpha));
 }
 
+std::tuple<common::Polygon, common::Polygon> MakeDepthCheckPolygon(const common::Segment& segment, double alpha) {
+  const auto direction = segment.End - segment.Start;
+  const auto poly1 = common::Polygon{
+    {segment.Start, segment.End, segment.Start + direction.Rotate(alpha), segment.Start},
+  };
+  const auto poly2 = common::Polygon{
+    {segment.Start, segment.End, segment.Start + direction.Rotate(-alpha), segment.Start}, 
+  };
+
+  return {poly1, poly2};
+}
+
 double GetSpeed(const RouteData& route_data, const double wave_height) {
   if (
       !route_data.DangerHeight.has_value() ||
@@ -215,26 +227,31 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
   const std::vector<RoutePointWithForecast>& route,
   const time_t check_time
 ) const {
-  std::optional<entities::DepthGrid> grid;
-  if (route_data_.PathToDepthFile.has_value() &&
-      route_data_.ShipDraft.has_value()) {
-    grid = entities::DepthGrid(route_data_.PathToDepthFile.value());
-  } else {
-    wxLogWarning("depth grid or ship draft is not provided");
-    return {};
+  std::vector<common::Polygon> polygons;
+  std::vector<RoutePointWithForecast> start_points;
+
+  for(size_t i = 0; i < route.size(); ++i) {
+    const auto& point = route[i];
+    const auto segment_id = point.route_point.segment_id;
+    if (i == 0 || route[i - 1].route_point.segment_id != segment_id) {
+      const auto& segment = route_data_.Route->GetSegments()[segment_id];
+      const auto alpha = common::CalculateSteeringAngle(point.speed);
+      const auto [poly1, poly2] = MakeDepthCheckPolygon(segment.segment, alpha);
+      polygons.push_back(poly1);
+      polygons.push_back(poly2);
+      start_points.push_back(point);
+      start_points.push_back(point);
+    }
   }
 
+  const auto hazard_triangle_points = db_client_->SelectHazardDepthPoints(polygons, route_data_.DangerHeight.value());
   std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
-
-  for(const auto& route_point : route) {
-    const auto depth_point = grid->GetNearestDepthPoint(route_point.route_point.point);
-    if (depth_point.has_value() && -depth_point->Depth < route_data_.ShipDraft.value()) {
-      result.push_back(entities::diagnostic::MakeDepthHazardPoint(
-        depth_point->Point,
-        check_time,
-        route_point.expected_time,
-        depth_point->Depth
-      ));
+  for(size_t i = 0; i < hazard_triangle_points.size(); ++i) {
+    const auto& start_point = start_points[i];
+    const auto& triangel_points = hazard_triangle_points[i];
+    for(const  auto& depth_point : triangel_points) {
+      const time_t expected_time = start_point.expected_time + common::GetHaversineDistance(start_point.route_point.point, depth_point.Point) / start_point.speed;
+      result.push_back(entities::diagnostic::MakeDepthHazardPoint(depth_point.Point, check_time, expected_time, depth_point.Depth));
     }
   }
 

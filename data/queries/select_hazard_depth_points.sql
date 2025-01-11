@@ -1,13 +1,11 @@
 -- kSelectHazardDepthPoints
 
-SELECT load_extension('mod_spatialite');
-
 WITH triangles(id, geom, height) AS (
     VALUES $1
 )
 SELECT 
-    ST_AsText(d.geom) as geom 
     d.depth, 
+    ST_AsText(d.geom) as geom, 
     triangles.id 
 FROM depths d 
 INNER JOIN 

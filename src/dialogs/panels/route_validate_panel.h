@@ -26,6 +26,7 @@ private:
   void BindEvents();
   void UnbindEvents();
   void OnCheckPathClicked(wxCommandEvent&);
+  void OnLoadDepthClicked(wxCommandEvent&);
   void OnLoadForecastsClicked(wxCommandEvent&);
   void OnBrowseDepthClicked(wxCommandEvent&);
   void OnRefreshRouteList(wxCommandEvent&);
@@ -34,6 +35,7 @@ private:
   DiagnosticPanel* diagnostic_panel_;
   wxWindow* canvas_window_;
   std::shared_ptr<marine_navi::cases::MarineRouteScanner> marine_route_scanner_;
+  std::shared_ptr<marine_navi::cases::DepthLoader> depth_loader_;
   std::shared_ptr<marine_navi::cases::ForecastsLoader> forecasts_loader_;
 
   wxListBox* route_list_box_;
@@ -55,6 +57,7 @@ private:
   wxButton* b_scan_route_;
   wxButton* b_load_forecasts_;
   wxButton* b_refresh_route_list_;
+  wxButton* b_load_depth_;
 };
 
 
