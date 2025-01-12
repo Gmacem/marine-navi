@@ -95,7 +95,7 @@ void RouteValidatePanel::CreateControls() {
 
   {    
     {
-      ship_info_panel_ = new ShipInfoPanel(firstPnl);
+      ship_info_panel_ = new ShipInfoPanel(firstPnl, firstPanelSizer);
       firstPanelSizer->Add(ship_info_panel_, 1, wxALL | wxEXPAND, 5);
     }
 

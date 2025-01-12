@@ -38,7 +38,7 @@ SafePointManagerPanel::SafePointManagerPanel(wxWindow* parent,
   wxBoxSizer* main_sizer = new wxBoxSizer(wxVERTICAL);
 
   waypoint_list_box_ = new wxListBox(this, wxID_ANY);
-  b_refresh_waypoint_list_ = new wxButton(this, wxID_ANY, _("Browse..."));
+  b_refresh_waypoint_list_ = new wxButton(this, wxID_ANY, _("Refresh"));
   b_add_safe_point_ = new wxButton(this, wxID_ANY, _("Add safe point"));
 
   main_sizer->Add(waypoint_list_box_, 1, wxALL | wxEXPAND, 5);
