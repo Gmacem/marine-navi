@@ -9,7 +9,6 @@ namespace marine_navi::dialogs::panels {
 class ShipInfoPanel : public wxPanel {
 public:
     ShipInfoPanel(wxWindow* parent);
-    ShipInfoPanel(wxWindow* parent, wxSizer* sizer);
 
     entities::ShipPerformanceInfo GetShipInfo();
 

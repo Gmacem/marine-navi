@@ -15,17 +15,17 @@ bool CheckIsEmpty(wxTextCtrl* txt, wxString message) {
 }
 } // namespace
 
-ShipInfoPanel::ShipInfoPanel(wxWindow* parent): ShipInfoPanel(parent, new wxBoxSizer(wxVERTICAL)) {}
+ShipInfoPanel::ShipInfoPanel(wxWindow* parent): wxPanel(parent) {
+    sizer_ = new wxBoxSizer(wxVERTICAL);
+    c_danger_height_ = CreateLabeledTextCtrl(this, sizer_, _("Danger height, m"), "2");
+    c_engine_power_ = CreateLabeledTextCtrl(this, sizer_, _("Engine power, kw"), "1000");
+    c_displacement_ = CreateLabeledTextCtrl(this, sizer_, _("Displacement, ton"), "5000");
+    c_length_ = CreateLabeledTextCtrl(this, sizer_, _("Ship length, m"), "100");
+    c_fullness_ = CreateLabeledTextCtrl(this, sizer_, _("Block coefficient"), "0.8");
+    c_speed_ = CreateLabeledTextCtrl(this, sizer_, _("Speed, knot"), "2");
+    c_ship_draft_ = CreateLabeledTextCtrl(this, sizer_, _("Ship draft, m"), "1");
 
-ShipInfoPanel::ShipInfoPanel(wxWindow* parent, wxSizer* sizer): wxPanel(parent) {
-    sizer_ = sizer;
-    c_danger_height_ = CreateLabeledTextCtrl(this, sizer, _("Danger height, m"), "2");
-    c_engine_power_ = CreateLabeledTextCtrl(this, sizer, _("Engine power, kw"), "1000");
-    c_displacement_ = CreateLabeledTextCtrl(this, sizer, _("Displacement, ton"), "5000");
-    c_length_ = CreateLabeledTextCtrl(this, sizer, _("Ship length, m"), "100");
-    c_fullness_ = CreateLabeledTextCtrl(this, sizer, _("Block coefficient"), "0.8");
-    c_speed_ = CreateLabeledTextCtrl(this, sizer, _("Speed, knot"), "2");
-    c_ship_draft_ = CreateLabeledTextCtrl(this, sizer, _("Ship draft, m"), "1");
+    SetSizer(sizer_);
 }
 
 entities::ShipPerformanceInfo ShipInfoPanel::GetShipInfo() {

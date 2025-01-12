@@ -38,7 +38,6 @@ private:
   std::shared_ptr<marine_navi::cases::ForecastsLoader> forecasts_loader_;
 
   wxListBox* route_list_box_;
-  wxTextCtrl* c_route_name_;
 
   ShipInfoPanel* ship_info_panel_;
 
