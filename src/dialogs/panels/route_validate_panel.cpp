@@ -11,6 +11,7 @@
 #include <cases/forecasts_loader.h>
 #include <cases/marine_route_scanner.h>
 #include <common/marine_math.h>
+#include <dialogs/panels/helpers.h>
 
 namespace marine_navi::dialogs::panels {
 
@@ -45,14 +46,6 @@ std::vector<PlugIn_Waypoint> GetRoute(wxString route_name) {
 void RefreshRouteList(wxListBox* boxList) {
   boxList->Clear();
   boxList->InsertItems(GetRouteNames(), 0);
-}
-
-bool CheckIsEmpty(wxTextCtrl* txt, wxString message) {
-  if (txt->IsEmpty()) {
-    wxMessageBox(message, "Error", wxOK | wxICON_ERROR);
-    return true;
-  }
-  return false;
 }
 
 time_t GetTimeFromCtrls(wxDatePickerCtrl* date, wxTimePickerCtrl* time) {
@@ -101,13 +94,7 @@ void RouteValidatePanel::CreateControls() {
   wxBoxSizer* secondPanelSizer = new wxBoxSizer(wxVERTICAL);
 
   {    
-    c_danger_height_ = CreateLabeledTextCtrl(firstPnl, firstPanelSizer, _("Danger height, m"), "2");
-    c_engine_power_ = CreateLabeledTextCtrl(firstPnl, firstPanelSizer, _("Engine power, kw"), "1000");
-    c_displacement_ = CreateLabeledTextCtrl(firstPnl, firstPanelSizer, _("Displacement, ton"), "5000");
-    c_length_ = CreateLabeledTextCtrl(firstPnl, firstPanelSizer, _("Ship length, m"), "100");
-    c_fullness_ = CreateLabeledTextCtrl(firstPnl, firstPanelSizer, _("Block coefficient"), "0.8");
-    c_speed_ = CreateLabeledTextCtrl (firstPnl, firstPanelSizer, _("Speed, knot"), "2");
-    c_ship_draft_ = CreateLabeledTextCtrl(firstPnl, firstPanelSizer, _("Ship draft, m"), "1");
+    ship_info_panel_ = new ShipInfoPanel(firstPnl);
 
     {
       wxBoxSizer* datetime = new wxBoxSizer(wxHORIZONTAL);
@@ -161,32 +148,6 @@ void RouteValidatePanel::CreateControls() {
   Centre(wxBOTH);
 }
 
-wxTextCtrl* RouteValidatePanel::CreateLabeledTextCtrl(wxWindow *parent,
-                                                      wxSizer* sizer,
-                                                      const wxString& label,
-                                                      std::optional<wxString> default_value) {
-  wxFloatingPointValidator<double> validator(2, nullptr, wxNUM_VAL_DEFAULT);
-  validator.SetRange(-1e5, 1e5);
-  sizer->Add(new wxStaticText(parent, wxID_ANY, label));
-
-  wxTextCtrl* textCtrl =
-      new wxTextCtrl(parent, wxID_ANY, default_value.value_or(wxEmptyString), wxDefaultPosition,
-                     wxDefaultSize, 0, validator);
-  sizer->Add(textCtrl, 0, wxALL, 5);
-  return textCtrl;
-}
-
-wxTextCtrl* RouteValidatePanel::CreateBrowseFileTextCtrl(wxWindow *parent,
-    wxButton* browseButton, wxSizer* sizer, const wxString& label) {
-  wxBoxSizer* fileSizer = new wxBoxSizer(wxHORIZONTAL);
-  fileSizer->Add(new wxStaticText(parent, wxID_ANY, label));
-  wxTextCtrl* textCtrl = new wxTextCtrl(parent, wxID_ANY, "");
-  fileSizer->Add(textCtrl, 1, wxALL, 5);
-  fileSizer->Add(browseButton, 0, wxALL, 5);
-  sizer->Add(fileSizer, 1, wxALL | wxEXPAND, 5);
-  return textCtrl;
-}
-
 void RouteValidatePanel::BindEvents() {
   b_scan_route_->Bind(wxEVT_BUTTON, &RouteValidatePanel::OnCheckPathClicked,
                     this);
@@ -215,14 +176,6 @@ void RouteValidatePanel::UnbindEvents() {
 void RouteValidatePanel::OnCheckPathClicked(wxCommandEvent&) {
   cases::RouteData route_data;
 
-  auto parseDouble = [](const wxString& str) -> std::optional<double> {
-    double result;
-    if (!str.ToDouble(&result)) {
-      return std::nullopt;
-    }
-    return result;
-  };
-
   if (int selection = route_list_box_->GetSelection(); selection == wxNOT_FOUND) {
     wxMessageBox("Please choose a route.", "Error", wxOK | wxICON_ERROR);
     return;
@@ -235,25 +188,9 @@ void RouteValidatePanel::OnCheckPathClicked(wxCommandEvent&) {
     }
   }
 
-  if (CheckIsEmpty(c_speed_, _("Please specify speed"))) {
+  route_data.ShipPerformanceInfo = ship_info_panel_->GetShipInfo();
+  if (!route_data.ShipPerformanceInfo.Speed.has_value()) {
     return;
-  }
-
-  route_data.DangerHeight = parseDouble(c_danger_height_->GetValue().mb_str());
-  route_data.EnginePower = parseDouble(c_engine_power_->GetValue().mb_str());
-  route_data.Displacement = parseDouble(c_displacement_->GetValue().mb_str());
-  route_data.Length = parseDouble(c_length_->GetValue().mb_str());
-  route_data.Fullness = parseDouble(c_fullness_->GetValue().mb_str());
-  route_data.Speed = parseDouble(c_speed_->GetValue().mb_str());
-  if (route_data.Speed.has_value()) {
-    route_data.Speed = common::KnotsToMetersPerSecond(route_data.Speed.value());
-  } else {
-    wxMessageBox("Invalid speed", "Error", wxOK | wxICON_ERROR);
-    return;
-  }
-  route_data.ShipDraft = parseDouble(c_ship_draft_->GetValue().mb_str());
-  if (route_data.ShipDraft.has_value()) {
-    route_data.ShipDraft = common::FeetToMeters(route_data.ShipDraft.value());
   }
   route_data.DepartTime = GetTimeFromCtrls(d_route_date_, t_route_time_);
 

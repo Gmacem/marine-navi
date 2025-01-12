@@ -8,6 +8,7 @@
 #include <wx/wx.h>
 
 #include "dialogs/panels/diagnostic_panel.h"
+#include "dialogs/panels/ship_info_panel.h"
 #include "dependencies.h"
 
 namespace marine_navi::dialogs::panels {
@@ -20,9 +21,7 @@ public:
 
 private:
   void CreateControls();
-  wxTextCtrl* CreateLabeledTextCtrl(wxWindow *parent, wxSizer* sizer, const wxString& label, std::optional<wxString> default_value = std::nullopt);
-  wxTextCtrl* CreateBrowseFileTextCtrl(wxWindow *parent, wxButton* browse_button, wxSizer* sizer,
-                                       const wxString& label);
+
   void BindEvents();
   void UnbindEvents();
   void OnCheckPathClicked(wxCommandEvent&);
@@ -41,13 +40,7 @@ private:
   wxListBox* route_list_box_;
   wxTextCtrl* c_route_name_;
 
-  wxTextCtrl* c_danger_height_;
-  wxTextCtrl* c_engine_power_;
-  wxTextCtrl* c_displacement_;
-  wxTextCtrl* c_length_;
-  wxTextCtrl* c_fullness_;
-  wxTextCtrl* c_speed_;
-  wxTextCtrl* c_ship_draft_;
+  ShipInfoPanel* ship_info_panel_;
 
   wxDatePickerCtrl* d_route_date_;
   wxTimePickerCtrl* t_route_time_;

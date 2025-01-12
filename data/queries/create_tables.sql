@@ -51,3 +51,20 @@ WHERE NOT EXISTS (
     WHERE f_table_name = 'depths' 
       AND f_geometry_column = 'geom'
 );
+
+
+CREATE TABLE IF NOT EXISTS safe_points (
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    name    TEXT NOT NULL
+);
+
+SELECT AddGeometryColumn(
+    'safe_points', 'geom', 4326, 'POINT', 'XY'
+), CreateSpatialIndex('safe_points', 'geom')
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM geometry_columns 
+    WHERE f_table_name = 'safe_points' 
+      AND f_geometry_column = 'geom'
+);

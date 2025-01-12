@@ -5,6 +5,7 @@
 #include "cases/depth_loader.h"
 #include "cases/forecasts_loader.h"
 #include "cases/marine_route_scanner.h"
+#include "cases/safe_point_manager.h"
 #include "clients/db_client.h"
 #include "clients/query_builder/sql_query_storage.h"
 #include "clients/esimo.h"
@@ -38,6 +39,7 @@ Dependencies CreateDependencies(wxWindow* ocpnCanvasWindow) {
       std::make_shared<cases::ForecastsLoader>(deps.db_client);
   deps.marine_route_scanner =
       std::make_shared<cases::MarineRouteScanner>(deps.db_client);
+  deps.safe_point_manager = std::make_shared<cases::SafePointManager>(deps.db_client);
   deps.render_overlay = std::make_shared<marine_navi::RenderOverlay>(deps);
   return deps;
 }

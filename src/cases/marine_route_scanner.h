@@ -15,18 +15,14 @@
 #include "entities/diagnostic/diagnostic.h"
 #include "entities/diagnostic/diagnostic_hazard_point.h"
 #include "entities/route.h"
+#include "entities/ship.h"
 
 namespace marine_navi::cases {
 
 struct RouteData {
   std::shared_ptr<entities::Route> Route;
-  std::optional<double> DangerHeight;
-  std::optional<double> EnginePower;
-  std::optional<double> Displacement;
-  std::optional<double> Length;
-  std::optional<double> Fullness;
-  std::optional<double> Speed;
-  std::optional<double> ShipDraft;
+  entities::ShipPerformanceInfo ShipPerformanceInfo;
+
   time_t DepartTime;
   std::optional<std::string> PathToDepthFile;
 };

@@ -40,25 +40,26 @@ std::tuple<common::Polygon, common::Polygon> MakeDepthCheckPolygon(const common:
 }
 
 double GetSpeed(const RouteData& route_data, const double wave_height) {
+  const auto& ship_performance_info = route_data.ShipPerformanceInfo;
   if (
-      !route_data.DangerHeight.has_value() ||
-      !route_data.EnginePower.has_value() ||
-      !route_data.Displacement.has_value() ||
-      !route_data.Length.has_value() ||
-      !route_data.Fullness.has_value() ||
-      !route_data.ShipDraft.has_value()
+      !ship_performance_info.DangerHeight.has_value() ||
+      !ship_performance_info.EnginePower.has_value() ||
+      !ship_performance_info.Displacement.has_value() ||
+      !ship_performance_info.Length.has_value() ||
+      !ship_performance_info.Fullness.has_value() ||
+      !ship_performance_info.ShipDraft.has_value()
   ) {
-    return route_data.Speed.value();
+    return ship_performance_info.Speed.value();
   }
   auto r = common::CalculateVelocityRatio(
-    route_data.EnginePower.value(),
-    route_data.Displacement.value(),
-    route_data.Length.value(),
-    route_data.Fullness.value(),
+    ship_performance_info.EnginePower.value(),
+    ship_performance_info.Displacement.value(),
+    ship_performance_info.Length.value(),
+    ship_performance_info.Fullness.value(),
     wave_height
   );
 
-  return r * route_data.Speed.value();
+  return r * ship_performance_info.Speed.value();
 }
 
 std::vector<entities::diagnostic::DiagnosticHazardPoint> FilterDiagnosticPoints(
@@ -135,7 +136,7 @@ std::vector<MarineRouteScanner::RoutePointWithForecast> MarineRouteScanner::GetR
   const double kForecastStepMeters = 10000;
   const double kDangerousDistanceRad = 0.1;
   const int64_t kForecastValidTime = 6*60*60; // maximum time the forecast is valid
-  const double kMidPointDistance = 100;
+
   const auto route_points = GetRoutePoints(route_data_.Route, kForecastStepMeters);
   std::vector<common::Point> points;
   std::transform(route_points.begin(), route_points.end(), std::back_inserter(points),
@@ -147,7 +148,7 @@ std::vector<MarineRouteScanner::RoutePointWithForecast> MarineRouteScanner::GetR
     grouped[id].emplace_back(std::get<0>(forecast), std::get<1>(forecast));
   }
   time_t cur_time = route_data_.DepartTime;
-  double cur_speed = route_data_.Speed.value();
+  double cur_speed = route_data_.ShipPerformanceInfo.Speed.value();
 
   std::vector<MarineRouteScanner::RoutePointWithForecast> result;
 
@@ -197,7 +198,7 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
       continue;
     }
 
-    if (nearest_forecast->GetWaveHeight() > route_data_.DangerHeight.value()) {
+    if (nearest_forecast->GetWaveHeight() > route_data_.ShipPerformanceInfo.DangerHeight.value()) {
       result.push_back(entities::diagnostic::MakeHighWavesHazardPoint(
         route_point.nearest_forecast->point,
         check_time,
@@ -230,7 +231,7 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
     }
   }
 
-  const auto hazard_triangle_points = db_client_->SelectHazardDepthPoints(polygons, route_data_.DangerHeight.value());
+  const auto hazard_triangle_points = db_client_->SelectHazardDepthPoints(polygons, route_data_.ShipPerformanceInfo.DangerHeight.value());
   std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
   for(size_t i = 0; i < hazard_triangle_points.size(); ++i) {
     const auto& start_point = start_points[i];

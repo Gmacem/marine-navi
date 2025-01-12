@@ -11,6 +11,7 @@
 #include "common/utils.h"
 #include "entities/depth_point.h"
 #include "entities/forecast_point.h"
+#include "entities/safe_point.h"
 #include "entities/weather_forecast.h"
 
 namespace marine_navi::clients {
@@ -38,6 +39,9 @@ public:
 
   // @return A list of hazard points for each triangle
   std::vector<std::vector<entities::DepthPoint> > SelectHazardDepthPoints(std::vector<common::Polygon> triagnles, double height);
+
+  void InsertSafePoints(const std::vector<entities::SafePoint>& save_points);
+  std::vector<entities::SafePoint> SelectSafePoints();
 
 private:
   int64_t InsertQuery(std::string query);

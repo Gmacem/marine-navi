@@ -237,4 +237,36 @@ std::vector<std::vector<entities::DepthPoint> > DbClient::SelectHazardDepthPoint
   return result;
 }
 
+void DbClient::InsertSafePoints(const std::vector<entities::SafePoint>& save_points) {
+  const std::string kQueryName = "kInsertSafePoints";
+  const auto& query_template = query_storage_->GetTemplate(kQueryName);
+
+  std::vector<std::vector<SingleArgVar> > save_points_for_insert;
+  for(size_t i = 0; i < save_points.size(); ++i) {
+    const auto& save_point = save_points[i];
+    save_points_for_insert.emplace_back(std::vector<SingleArgVar>{
+        BaseArgVar{save_point.Name},
+        BaseArgVar{save_point.Point},
+    });
+  }
+
+  const auto query = query_template.MakeQuery(query_builder::ComposeArguments(save_points_for_insert));
+  db_->exec(query);
+}
+
+std::vector<entities::SafePoint> DbClient::SelectSafePoints() {
+  const std::string kQueryName = "kInsertSafePoints";
+  const auto& query_template = query_storage_->GetTemplate(kQueryName);
+
+  const auto query = query_template.MakeQuery({});
+  SQLite::Statement st(*db_, query);
+  std::vector<entities::SafePoint> result;
+  while (st.executeStep()) {
+    const std::string name = st.getColumn(0).getText();
+    const Point point = Point::FromWktString(st.getColumn(1).getText());
+    result.push_back({entities::SafePoint{point, name}});
+  }
+  return result;
+}
+
 }  // namespace marine_navi::clients
