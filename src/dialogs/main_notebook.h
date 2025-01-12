@@ -7,6 +7,7 @@
 #include "dependencies.h"
 #include "dialogs/panels/diagnostic_panel.h"
 #include "dialogs/panels/route_validate_panel.h"
+#include "dialogs/panels/safe_point_manager_panel.h"
 
 namespace marine_navi::dialogs {
 
@@ -39,6 +40,8 @@ public:
 private:
   panels::DiagnosticPanel* diagnostic_panel_;
   panels::RouteValidatePanel* route_validate_panel_;
+  panels::SafePointManagerPanel* safe_point_manager_panel_;
+
 };
 
 }  // namespace marine_navi::dialogs

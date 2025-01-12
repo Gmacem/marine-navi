@@ -43,9 +43,11 @@ MarineNaviMainDlg::MarineNaviMainDlg(wxWindow* parent, wxWindowID id,
 
   diagnostic_panel_ = new panels::DiagnosticPanel(notebook);
   route_validate_panel_ = new panels::RouteValidatePanel(notebook, diagnostic_panel_, dependencies);
+  safe_point_manager_panel_ = new panels::SafePointManagerPanel(notebook, dependencies);
 
   notebook->AddPage(route_validate_panel_, _("Main"));
   notebook->AddPage(diagnostic_panel_, _("Diagnostic"));
+  notebook->AddPage(safe_point_manager_panel_, _("Safe point manager"));
 
   wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
   mainSizer->Add(notebook, 1, wxEXPAND | wxALL, 5);

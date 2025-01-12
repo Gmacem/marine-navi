@@ -94,7 +94,10 @@ void RouteValidatePanel::CreateControls() {
   wxBoxSizer* secondPanelSizer = new wxBoxSizer(wxVERTICAL);
 
   {    
-    ship_info_panel_ = new ShipInfoPanel(firstPnl);
+    {
+      ship_info_panel_ = new ShipInfoPanel(firstPnl);
+      firstPanelSizer->Add(ship_info_panel_, 1, wxALL | wxEXPAND, 5);
+    }
 
     {
       wxBoxSizer* datetime = new wxBoxSizer(wxHORIZONTAL);
