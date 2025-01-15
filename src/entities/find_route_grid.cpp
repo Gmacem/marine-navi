@@ -55,7 +55,7 @@ FindRouteGrid::FindRouteGrid(const common::Polygon& polygon, double step) {
   std::vector<IntPoint> int_polygon;
 
   for (const auto& point : polygon.Points) {
-    IntPoint pt{point.X() / step, point.Y() / step};
+    IntPoint pt{static_cast<int64_t>(point.X() / step), static_cast<int64_t>(point.Y() / step)};
     minX = std::min(minX, pt.x);
     maxX = std::max(maxX, pt.x);
     minY = std::min(minY, pt.y);
