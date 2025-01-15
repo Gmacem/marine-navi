@@ -177,7 +177,7 @@ void RouteValidatePanel::UnbindEvents() {
 }
 
 void RouteValidatePanel::OnCheckPathClicked(wxCommandEvent&) {
-  cases::RouteData route_data;
+  cases::RouteScannerInput route_data;
 
   if (int selection = route_list_box_->GetSelection(); selection == wxNOT_FOUND) {
     wxMessageBox("Please choose a route.", "Error", wxOK | wxICON_ERROR);

@@ -3,7 +3,8 @@
 namespace marine_navi {
 
 RenderOverlay::RenderOverlay(Dependencies& deps)
-    : checkPathCase_(deps.marine_route_scanner) {}
+    : checkPathCase_(deps.marine_route_scanner),
+      canvas_window_(deps.ocpn_canvas_window) {}
 
 bool RenderOverlay::Render(piDC& dc, PlugIn_ViewPort* vp) {
   if (checkPathCase_->IsShow()) {
@@ -15,7 +16,7 @@ bool RenderOverlay::Render(piDC& dc, PlugIn_ViewPort* vp) {
 }
 
 void RenderOverlay::RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp,
-                                    const cases::RouteData& pathData) {
+                                    const cases::RouteScannerInput& pathData) {
   dc.SetPen(*wxBLACK);                // reset pen
   dc.SetBrush(*wxTRANSPARENT_BRUSH);  // reset brush
   dc.SetPen(wxPen(wxColor(0, 0, 0)));
@@ -47,6 +48,11 @@ void RenderOverlay::RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp,
       AddSingleWaypointEx(&waypoint, false);
     }
   }
+}
+
+void RenderOverlay::RenderBestPath(PlugIn_Route_Ex* route_ex) {
+  AddPlugInRouteEx(route_ex, false);
+  RequestRefresh(canvas_window_);
 }
 
 }  // namespace marine_navi

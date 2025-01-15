@@ -99,7 +99,7 @@ int64_t DbClient::InsertQuery(std::string query) {
 }
 
 std::vector<std::tuple<entities::ForecastPoint, double, int>>
-DbClient::SelectNearestForecasts(
+DbClient::SelectClosestForecasts(
     const std::vector<common::Point>& route_points,
     const double max_distance_rad,
     const time_t& min_date) {

@@ -29,7 +29,7 @@ public:
 
 // @return forecast point, distance to point and point id
   std::vector<std::tuple<entities::ForecastPoint, double, int>>
-  SelectNearestForecasts(
+  SelectClosestForecasts(
       const std::vector<common::Point>& route_points,
       const double max_distance_rad,
       const time_t& min_date);

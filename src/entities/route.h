@@ -22,6 +22,7 @@ struct RouteSegment {
 
 class Route {
 public:
+  Route(std::vector<common::Point> points);
   Route(std::vector<PlugIn_Waypoint> waypoints);
 
   double GetDistance() const { return total_distance_; }

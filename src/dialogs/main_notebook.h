@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "dependencies.h"
+#include "dialogs/panels/best_route_builder.h"
 #include "dialogs/panels/diagnostic_panel.h"
 #include "dialogs/panels/route_validate_panel.h"
 #include "dialogs/panels/safe_point_manager_panel.h"
@@ -38,10 +39,10 @@ public:
                     const Dependencies& dependencies);
 
 private:
+  panels::BestRouteBuilderPanel* best_route_builder_panel_;
   panels::DiagnosticPanel* diagnostic_panel_;
   panels::RouteValidatePanel* route_validate_panel_;
   panels::SafePointManagerPanel* safe_point_manager_panel_;
-
 };
 
 }  // namespace marine_navi::dialogs

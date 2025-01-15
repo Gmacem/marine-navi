@@ -16,16 +16,16 @@ public:
 
   bool Render(piDC& dc, PlugIn_ViewPort* vp);
 
+  void RenderBestPath(PlugIn_Route_Ex* route_ex);
+
 private:
-  void RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp, const cases::RouteData& pathData);
+  void RenderCheckPath(piDC& dc, PlugIn_ViewPort* vp, const cases::RouteScannerInput& pathData);
 
 private:
   std::shared_ptr<cases::MarineRouteScanner> checkPathCase_;
 
-  bool checkPathCalculated_;
   std::optional<wxPoint2DDouble> checkPathResult_;
-
-  std::vector<PlugIn_Waypoint_Ex> diagnostic_waypoints_;
+  wxWindow* canvas_window_;
 };
 
 }  // namespace marine_navi

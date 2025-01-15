@@ -19,12 +19,11 @@
 
 namespace marine_navi::cases {
 
-struct RouteData {
+struct RouteScannerInput {
   std::shared_ptr<entities::Route> Route;
   entities::ShipPerformanceInfo ShipPerformanceInfo;
 
   time_t DepartTime;
-  std::optional<std::string> PathToDepthFile;
 };
 
 class MarineRouteScanner {
@@ -32,12 +31,10 @@ class MarineRouteScanner {
 
 public:
   MarineRouteScanner(std::shared_ptr<clients::DbClient> dbClient);
-  void SetPathData(const RouteData& pathData);
-  const RouteData& GetPathData();
+  void SetPathData(const RouteScannerInput& pathData);
+  const RouteScannerInput& GetPathData();
   void SetShow(bool show);
   bool IsShow();
-
-  bool CheckLandIntersection(const Point& p1, const Point& p2) const;
   void CrossDetect();
 
   std::optional<entities::diagnostic::RouteValidateDiagnostic> GetDiagnostic();
@@ -45,7 +42,7 @@ public:
 private:
   struct RoutePointWithForecast {
     entities::RoutePoint route_point;
-    std::optional<entities::ForecastPoint> nearest_forecast;
+    std::optional<entities::ForecastPoint> closest_forecast;
 
     double speed;
     time_t expected_time;
@@ -62,7 +59,7 @@ private:
 
 private:
   std::mutex mutex_;
-  RouteData route_data_;
+  RouteScannerInput route_data_;
   bool show_;
   std::shared_ptr<clients::DbClient> db_client_;
   std::optional<entities::diagnostic::RouteValidateDiagnostic> diagnostic_;

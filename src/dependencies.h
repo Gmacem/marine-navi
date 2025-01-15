@@ -10,6 +10,7 @@ class Database;
 
 namespace marine_navi {
 namespace cases {
+class BestRouteMaker;
 class MarineRouteScanner;
 class ForecastsLoader;
 class DepthLoader;
@@ -26,6 +27,7 @@ class SqlQueryStorage;
 class RenderOverlay;
 
 struct Dependencies {
+  std::shared_ptr<cases::BestRouteMaker> best_route_maker;
   std::shared_ptr<cases::MarineRouteScanner> marine_route_scanner;
   std::shared_ptr<cases::ForecastsLoader> forecasts_loader;
   std::shared_ptr<cases::DepthLoader> depth_loader;

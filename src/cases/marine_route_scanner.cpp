@@ -1,5 +1,7 @@
 #include "marine_route_scanner.h"
 
+#include "cases/helpers/forecast_accessor.h"
+#include "cases/helpers/route_helpers.h"
 #include "common/marine_math.h"
 #include "entities/depth_point.h"
 
@@ -39,29 +41,6 @@ std::tuple<common::Polygon, common::Polygon> MakeDepthCheckPolygon(const common:
   return {poly1, poly2};
 }
 
-double GetSpeed(const RouteData& route_data, const double wave_height) {
-  const auto& ship_performance_info = route_data.ShipPerformanceInfo;
-  if (
-      !ship_performance_info.DangerHeight.has_value() ||
-      !ship_performance_info.EnginePower.has_value() ||
-      !ship_performance_info.Displacement.has_value() ||
-      !ship_performance_info.Length.has_value() ||
-      !ship_performance_info.Fullness.has_value() ||
-      !ship_performance_info.ShipDraft.has_value()
-  ) {
-    return ship_performance_info.Speed.value();
-  }
-  auto r = common::CalculateVelocityRatio(
-    ship_performance_info.EnginePower.value(),
-    ship_performance_info.Displacement.value(),
-    ship_performance_info.Length.value(),
-    ship_performance_info.Fullness.value(),
-    wave_height
-  );
-
-  return r * ship_performance_info.Speed.value();
-}
-
 std::vector<entities::diagnostic::DiagnosticHazardPoint> FilterDiagnosticPoints(
   const std::vector<entities::diagnostic::DiagnosticHazardPoint>& points, double distance_between_points) {
   std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
@@ -80,12 +59,12 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> FilterDiagnosticPoints(
 MarineRouteScanner::MarineRouteScanner(std::shared_ptr<clients::DbClient> dbClient)
     : mutex_(), route_data_(), show_(false), db_client_(dbClient) {}
 
-void MarineRouteScanner::SetPathData(const RouteData& pathData) {
+void MarineRouteScanner::SetPathData(const RouteScannerInput& pathData) {
   std::lock_guard lock(mutex_);
   route_data_ = pathData;
 }
 
-const RouteData& MarineRouteScanner::GetPathData() {
+const RouteScannerInput& MarineRouteScanner::GetPathData() {
   std::lock_guard lock(mutex_);
   return route_data_;
 }
@@ -98,21 +77,6 @@ void MarineRouteScanner::SetShow(bool show) {
 bool MarineRouteScanner::IsShow() {
   std::lock_guard lock(mutex_);
   return show_;
-}
-
-bool MarineRouteScanner::CheckLandIntersection(const Point& p1,
-                                               const Point& p2) const {
-  static constexpr double EPS = 1e-5;
-
-  Point minCorner{std::min(p1.Lat, p2.Lat), std::min(p1.Lon, p2.Lon)};
-  Point maxCorner{std::max(p1.Lat, p2.Lat), std::max(p1.Lon, p2.Lon)};
-  minCorner.Lat -= EPS;
-  minCorner.Lon -= EPS;
-  maxCorner.Lat += EPS;
-  maxCorner.Lon += EPS;
-
-  return PlugIn_GSHHS_CrossesLand(minCorner.Lat, minCorner.Lon, maxCorner.Lat,
-                                  maxCorner.Lon);
 }
 
 std::optional<entities::diagnostic::RouteValidateDiagnostic> MarineRouteScanner::GetDiagnostic() {
@@ -135,18 +99,14 @@ void MarineRouteScanner::CrossDetect() {
 std::vector<MarineRouteScanner::RoutePointWithForecast> MarineRouteScanner::GetRouteInfo() const {
   const double kForecastStepMeters = 10000;
   const double kDangerousDistanceRad = 0.1;
-  const int64_t kForecastValidTime = 6*60*60; // maximum time the forecast is valid
 
   const auto route_points = GetRoutePoints(route_data_.Route, kForecastStepMeters);
   std::vector<common::Point> points;
   std::transform(route_points.begin(), route_points.end(), std::back_inserter(points),
                  [](const entities::RoutePoint& route_point) { return route_point.point; });
-  auto forecasts = db_client_->SelectNearestForecasts(points, kDangerousDistanceRad, route_data_.DepartTime);
-  std::vector<std::vector<std::pair<entities::ForecastPoint, double>>> grouped(route_points.size());
-  for(const auto& forecast : forecasts) {
-    int id = std::get<2>(forecast);
-    grouped[id].emplace_back(std::get<0>(forecast), std::get<1>(forecast));
-  }
+  auto forecasts = db_client_->SelectClosestForecasts(points, kDangerousDistanceRad, route_data_.DepartTime);
+  const auto forecast_accessor = helpers::ForecastAccessor(forecasts);
+
   time_t cur_time = route_data_.DepartTime;
   double cur_speed = route_data_.ShipPerformanceInfo.Speed.value();
 
@@ -154,21 +114,10 @@ std::vector<MarineRouteScanner::RoutePointWithForecast> MarineRouteScanner::GetR
 
   for(size_t i = 0; i < route_points.size(); ++i) {
     const auto& route_point = route_points[i];
-    const auto& forecasts = grouped[i];
-    time_t forecast_delta_time = std::numeric_limits<time_t>::max();
-    std::optional<entities::ForecastPoint> nearest_forecast;
-    for(const auto& forecast : forecasts) {
-      time_t delta = cur_time - forecast.first.end_at;
-      if (forecast.first.end_at <= cur_time 
-          && forecast_delta_time > delta
-          && delta < kForecastValidTime) { 
-        forecast_delta_time = delta;
-        nearest_forecast = forecast.first;
-      }
-    }
+    const auto closest_forecast = forecast_accessor.GetClosestForecast(i, cur_time);
 
-    if (nearest_forecast.has_value()) {
-      cur_speed = GetSpeed(route_data_, nearest_forecast->GetWaveHeight());
+    if (closest_forecast.has_value()) {
+      cur_speed = helpers::GetSpeed(route_data_.ShipPerformanceInfo, closest_forecast->GetWaveHeight());
     }
 
     if (i > 0) {
@@ -177,7 +126,7 @@ std::vector<MarineRouteScanner::RoutePointWithForecast> MarineRouteScanner::GetR
     }
     result.push_back(RoutePointWithForecast{
       .route_point = route_point,
-      .nearest_forecast = nearest_forecast,
+      .closest_forecast = closest_forecast,
       .speed = cur_speed,
       .expected_time = cur_time,
     });
@@ -192,7 +141,7 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
   std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
 
   for(const auto& route_point : route) {
-    const auto& nearest_forecast = route_point.nearest_forecast;
+    const auto& nearest_forecast = route_point.closest_forecast;
 
     if (!nearest_forecast.has_value()) {
       continue;
@@ -200,7 +149,7 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
 
     if (nearest_forecast->GetWaveHeight() > route_data_.ShipPerformanceInfo.DangerHeight.value()) {
       result.push_back(entities::diagnostic::MakeHighWavesHazardPoint(
-        route_point.nearest_forecast->point,
+        route_point.closest_forecast->point,
         check_time,
         route_point.expected_time,
         nearest_forecast->GetWaveHeight())

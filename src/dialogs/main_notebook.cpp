@@ -41,11 +41,13 @@ MarineNaviMainDlg::MarineNaviMainDlg(wxWindow* parent, wxWindowID id,
     : MarineNaviDlgBase(parent, id, title, pos, size) {
   wxNotebook* notebook = new wxNotebook(this, wxID_ANY);
 
+  best_route_builder_panel_ = new panels::BestRouteBuilderPanel(notebook, dependencies);
   diagnostic_panel_ = new panels::DiagnosticPanel(notebook);
   route_validate_panel_ = new panels::RouteValidatePanel(notebook, diagnostic_panel_, dependencies);
   safe_point_manager_panel_ = new panels::SafePointManagerPanel(notebook, dependencies);
 
-  notebook->AddPage(route_validate_panel_, _("Main"));
+  notebook->AddPage(best_route_builder_panel_, _("Make route"));
+  notebook->AddPage(route_validate_panel_, _("Route validation"));
   notebook->AddPage(diagnostic_panel_, _("Diagnostic"));
   notebook->AddPage(safe_point_manager_panel_, _("Safe point manager"));
 

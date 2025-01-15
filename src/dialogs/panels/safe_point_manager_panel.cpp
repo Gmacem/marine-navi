@@ -1,5 +1,7 @@
 #include "safe_point_manager_panel.h"
 
+#include <algorithm>
+
 #include <ocpn_plugin.h>
 
 namespace marine_navi::dialogs::panels {
@@ -12,6 +14,7 @@ namespace {
       std::unique_ptr<PlugIn_Waypoint> waypoint = GetWaypoint_Plugin(waypointGUID);
       result.Add(waypoint->m_MarkName);
     }
+    std::sort(result.begin(), result.end());
     return result;
   }
 
