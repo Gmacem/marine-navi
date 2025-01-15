@@ -41,8 +41,9 @@ void RefreshRouteList(wxListBox* boxList) {
 
 } // namespace
 
-SelectRoutePanel::SelectRoutePanel(wxWindow* parent): wxPanel(parent) {
+SelectRoutePanel::SelectRoutePanel(wxWindow* parent, const std::string& title): wxPanel(parent) {
     wxBoxSizer* main_sizer = new wxBoxSizer(wxVERTICAL);
+    main_sizer->Add(new wxStaticText(this, wxID_ANY, title), 0, wxALL, 5);
     list_box_ = new wxListBox(this, wxID_ANY);
     b_refresh_list_ = new wxButton(this, wxID_ANY, _("Refresh"));
     main_sizer->Add(list_box_, 1, wxALL | wxEXPAND, 5);

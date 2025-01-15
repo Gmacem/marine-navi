@@ -11,7 +11,7 @@ namespace marine_navi::dialogs::panels {
 
 class SelectRoutePanel : public wxPanel {
 public:
-    SelectRoutePanel(wxWindow* parent);
+    SelectRoutePanel(wxWindow* parent, const std::string& title);
     ~SelectRoutePanel() { UnbindRefreshList(); }
 
     std::shared_ptr<entities::Route> GetRoute() const;

@@ -47,10 +47,10 @@ bool IsInsidePolygon(const std::vector<IntPoint>& polygon, const IntPoint& p) {
 FindRouteGrid::FindRouteGrid(const common::Polygon& polygon, double step) {
   const int64_t kMaxCheckCount = 1000000;
   const int64_t kMaxVertexCount = 10000;
-  int64_t minX = std::numeric_limits<int64_t>::min(),
-          maxX = std::numeric_limits<int64_t>::max();
-  int64_t minY = std::numeric_limits<int64_t>::min(),
-          maxY = std::numeric_limits<int64_t>::max();
+  int64_t minX = std::numeric_limits<int64_t>::max(),
+          maxX = std::numeric_limits<int64_t>::min();
+  int64_t minY = std::numeric_limits<int64_t>::max(),
+          maxY = std::numeric_limits<int64_t>::min();
 
   std::vector<IntPoint> int_polygon;
 

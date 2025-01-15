@@ -27,8 +27,8 @@ BestRouteBuilderPanel::BestRouteBuilderPanel(wxWindow* parent, const Dependencie
         render_overlay_(dependencies.render_overlay),
         canvas_window_(dependencies.ocpn_canvas_window) {
     ship_info_panel_ = new ShipInfoPanel(this);
-    select_zone_panel_ = new SelectRoutePanel(this);
-    select_route_panel_ = new SelectRoutePanel(this);
+    select_zone_panel_ = new SelectRoutePanel(this, "Select zone");
+    select_route_panel_ = new SelectRoutePanel(this, "Select route");
     depart_time_input_ = new DepartTimeInput(this);
     b_make_best_route_ = new wxButton(this, wxID_ANY, _("Make best route"));
 
