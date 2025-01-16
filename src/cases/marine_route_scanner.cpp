@@ -180,7 +180,7 @@ std::vector<entities::diagnostic::DiagnosticHazardPoint> MarineRouteScanner::Get
     }
   }
 
-  const auto hazard_triangle_points = db_client_->SelectHazardDepthPoints(polygons, route_data_.ShipPerformanceInfo.DangerHeight.value());
+  const auto hazard_triangle_points = db_client_->SelectHazardDepthPointsInAngle(polygons, route_data_.ShipPerformanceInfo.DangerHeight.value());
   std::vector<entities::diagnostic::DiagnosticHazardPoint> result;
   for(size_t i = 0; i < hazard_triangle_points.size(); ++i) {
     const auto& start_point = start_points[i];

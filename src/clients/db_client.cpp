@@ -212,8 +212,33 @@ void DbClient::InsertDepthPointBatch(const std::vector<entities::DepthPoint>& re
   // trans.commit();
 }
 
-std::vector<std::vector<entities::DepthPoint> > DbClient::SelectHazardDepthPoints(std::vector<common::Polygon> triangles, double height) {
+std::vector<std::vector<entities::DepthPoint> > DbClient::SelectHazardDepthPoints(const std::vector<common::Point>& points, double height, double distance) {
   const std::string kQueryName = "kSelectHazardDepthPoints";
+  const auto& query_template = query_storage_->GetTemplate(kQueryName);
+
+  std::vector<std::vector<SingleArgVar> > points_with_id(points.size());
+  for(size_t i = 0; i < points.size(); ++i) {
+    points_with_id[i] = std::vector<SingleArgVar>{
+      BaseArgVar{static_cast<int64_t>(i)},
+      BaseArgVar{points[i]},
+    };
+  }
+
+  const auto query = query_template.MakeQuery(query_builder::ComposeArguments(points_with_id, height, distance));
+  SQLite::Statement st(*db_, query);
+  std::vector<std::vector<entities::DepthPoint> > result(points.size());
+  while (st.executeStep()) {
+    const double depth = st.getColumn(0).getDouble();
+    const Point point = Point::FromWktString(st.getColumn(1).getText());
+    const int point_id = st.getColumn(2).getInt();
+    result[point_id].push_back({entities::DepthPoint{point, depth}});
+  }
+
+  return result;
+}
+
+std::vector<std::vector<entities::DepthPoint> > DbClient::SelectHazardDepthPointsInAngle(std::vector<common::Polygon> triangles, double height) {
+  const std::string kQueryName = "kSelectHazardDepthPointsInAngle";
   const auto& query_template = query_storage_->GetTemplate(kQueryName);
 
   std::vector<std::vector<SingleArgVar> > triangles_with_id(triangles.size());

@@ -22,6 +22,7 @@ private:
   std::shared_ptr<clients::DbClient> db_client_;
   const time_t min_time_;
   const helpers::ForecastAccessor forecast_accessor_;
+  const std::vector<std::vector<entities::DepthPoint> > danger_depth_points_;
 };
 
 }  // namespace marine_navi::cases::scorers

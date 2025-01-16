@@ -42,6 +42,9 @@ CREATE TABLE IF NOT EXISTS depths (
     depth   REAL NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS idx_depths_depth
+ON depths (depth);
+
 SELECT AddGeometryColumn(
     'depths', 'geom', 4326, 'POINT', 'XY'
 ), CreateSpatialIndex('depths', 'geom')
@@ -51,7 +54,6 @@ WHERE NOT EXISTS (
     WHERE f_table_name = 'depths' 
       AND f_geometry_column = 'geom'
 );
-
 
 CREATE TABLE IF NOT EXISTS safe_points (
     id      INTEGER PRIMARY KEY AUTOINCREMENT,

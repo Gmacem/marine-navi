@@ -28,7 +28,9 @@ TimeScorer::TimeScorer(const entities::ShipPerformanceInfo& info,
   route_points_(route_points),
   db_client_(db_client),
   min_time_(min_time),
-  forecast_accessor_(db_client_->SelectClosestForecasts(route_points, kMinRad, min_time)) {}
+  forecast_accessor_(db_client_->SelectClosestForecasts(route_points, kMinRad, min_time)),
+  danger_depth_points_(db_client_->SelectHazardDepthPoints(route_points, ship_performance_info_.DangerHeight.value(), kMinRad)) {
+}
 
 int64_t TimeScorer::GetScore(int start_id, int end_id, time_t depart_time) {
   const auto start_point = route_points_.at(start_id);
@@ -41,21 +43,8 @@ int64_t TimeScorer::GetScore(int start_id, int end_id, time_t depart_time) {
   }
   double speed = helpers::GetSpeed(ship_performance_info_, wave_height);
   
-  {
-    // TODO: make function
-    std::vector<common::Polygon> polygons;
-    const auto alpha = common::CalculateSteeringAngle(speed);
-    const auto [poly1, poly2] = MakeDepthCheckPolygon({
-      .Start = start_point,
-      .End = end_point
-    }, alpha);
-
-    polygons.push_back(poly1);
-    polygons.push_back(poly2);
-    auto hazard_points = db_client_->SelectHazardDepthPoints(polygons, ship_performance_info_.DangerHeight.value());
-    if (hazard_points[0].size() > 0) {
-      return kMaxScore;
-    }
+  if (danger_depth_points_[end_id].size() > 0) {
+    return kMaxScore;
   }
 
   return common::GetHaversineDistance(start_point, end_point) / speed;

@@ -37,8 +37,11 @@ public:
 
   void InsertDepthPointBatch(const std::vector<entities::DepthPoint>& depth_points);
 
+  // @return A list of hazard points based on distance
+  std::vector<std::vector<entities::DepthPoint> > SelectHazardDepthPoints(const std::vector<common::Point>& points, double height, double distance);
+
   // @return A list of hazard points for each triangle
-  std::vector<std::vector<entities::DepthPoint> > SelectHazardDepthPoints(std::vector<common::Polygon> triagnles, double height);
+  std::vector<std::vector<entities::DepthPoint> > SelectHazardDepthPointsInAngle(std::vector<common::Polygon> triagnles, double height);
 
   void InsertSafePoints(const std::vector<entities::SafePoint>& save_points);
   std::vector<entities::SafePoint> SelectSafePoints();

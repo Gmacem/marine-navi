@@ -1,17 +1,20 @@
 -- kSelectHazardDepthPoints
 
-WITH triangles(id, geom, height) AS (
+WITH points(id, geom) AS (
     VALUES $1
 )
 SELECT 
     d.depth, 
     ST_AsText(d.geom) as geom, 
-    triangles.id 
+    points.id 
 FROM depths d 
 INNER JOIN 
-    triangles
+    points 
 ON 
-    ST_Within(d.geom, triangles.geom) 
+    ST_Distance(
+        points.geom,
+        d.geom
+    ) <= $2
 WHERE 
-    -d.depth <= triangles.height
-ORDER BY triangles.id ASC;
+    -d.depth <= $3
+ORDER BY points.id ASC;
