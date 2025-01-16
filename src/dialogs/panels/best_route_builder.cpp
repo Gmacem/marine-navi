@@ -11,8 +11,11 @@ PlugIn_Route_Ex* MakeRouteFromBestRouteResult(const marine_navi::cases::BestRout
     int id = 0;
     for (const auto& point : best_route_result.points) {
         auto* waypoint = new PlugIn_Waypoint_Ex(point.Lat, point.Lon, wxEmptyString, wxEmptyString, "best_rout_" + std::to_string(id++));
+        waypoint->IsVisible = true;
         route->pWaypointList->Append(waypoint);
     }
+
+    route->m_isVisible = true;
 
     return route;
 }
