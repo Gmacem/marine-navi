@@ -35,6 +35,7 @@ BestRouteResult MakeBestRouteWithScorer(
   std::priority_queue<ValueType,
                       std::vector<ValueType>,
                       std::greater<ValueType> > order;
+  dp[start_point_id] = 0;
   order.push({0, start_point_id});
 
   while (!order.empty()) {
