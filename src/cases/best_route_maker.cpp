@@ -52,7 +52,7 @@ BestRouteResult MakeBestRouteWithScorer(
     }
     for (const auto& adjency_point_id : find_route_grid.GetAdjencyPointIds(point_id)) {
       const auto adjency_point_score = score + scorer->GetScore(point_id, adjency_point_id, depart_time);
-      if (dp[adjency_point_id] < adjency_point_score) {
+      if (dp[adjency_point_id] > adjency_point_score) {
         dp[adjency_point_id] = adjency_point_score;
         prev[adjency_point_id] = point_id;
         expected_time[adjency_point_id] = scorer->GetArrivalTime(point_id, adjency_point_id, depart_time);
