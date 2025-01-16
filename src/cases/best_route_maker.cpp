@@ -92,22 +92,23 @@ BestRouteResult BestRouteMaker::MakeBestRoute(const BestRouteInput& input) {
   int end_point_id =
       find_route_grid.GetClosestPointId(route_segment.segment.End);
 
-  std::shared_ptr<scorers::IScorer> scorer;
+  std::shared_ptr<scorers::IScorer> scorer = std::make_shared<scorers::TimeScorer>(
+    input.ship_performance_info,
+    find_route_grid.GetPoints(),
+    db_client_,
+    input.depart_time
+  );
+  /*
   switch (input.score_type) {
     case BestRouteInput::ScoreType::kTime:
-      scorer = std::make_shared<scorers::TimeScorer>(
-          input.ship_performance_info,
-          find_route_grid.GetPoints(),
-          db_client_,
-          input.depart_time
-      );
+      scorer = 
       break;
     case BestRouteInput::ScoreType::kFuel:
       break;
       //input.scorer = std::make_shared<scorers::FuelScorer>(db_client_);
     default:
-      std::runtime_error("unknown score type");
-  }
+      throw std::runtime_error("unknown score type");
+  }*/
   return MakeBestRouteWithScorer(find_route_grid, start_point_id, end_point_id, scorer);
 }
 
