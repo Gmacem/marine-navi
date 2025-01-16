@@ -95,7 +95,12 @@ BestRouteResult BestRouteMaker::MakeBestRoute(const BestRouteInput& input) {
   std::shared_ptr<scorers::IScorer> scorer;
   switch (input.score_type) {
     case BestRouteInput::ScoreType::kTime:
-      scorer = std::make_shared<scorers::TimeScorer>(db_client_);
+      scorer = std::make_shared<scorers::TimeScorer>(
+          input.ship_performance_info,
+          find_route_grid.GetPoints(),
+          db_client_,
+          input.depart_time
+      );
       break;
     case BestRouteInput::ScoreType::kFuel:
       break;
