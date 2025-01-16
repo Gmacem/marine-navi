@@ -3,6 +3,7 @@
 #include <queue>
 
 #include "cases/scorers/iscore.h"
+#include "cases/scorers/time_scorer.h"
 #include "entities/find_route_grid.h"
 
 namespace marine_navi::cases {
@@ -94,7 +95,7 @@ BestRouteResult BestRouteMaker::MakeBestRoute(const BestRouteInput& input) {
   std::shared_ptr<scorers::IScorer> scorer;
   switch (input.score_type) {
     case BestRouteInput::ScoreType::kTime:
-      //input.scorer = std::make_shared<scorers::TimeScorer>(db_client_);
+      scorer = std::make_shared<scorers::TimeScorer>(db_client_);
       break;
     case BestRouteInput::ScoreType::kFuel:
       break;
