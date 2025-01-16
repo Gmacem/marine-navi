@@ -224,7 +224,7 @@ std::vector<std::vector<entities::DepthPoint> > DbClient::SelectHazardDepthPoint
     };
   }
 
-  const auto query = query_template.MakeQuery(query_builder::ComposeArguments(points_with_id, height, distance));
+  const auto query = query_template.MakeQuery(query_builder::ComposeArguments(points_with_id, distance, height));
   SQLite::Statement st(*db_, query);
   std::vector<std::vector<entities::DepthPoint> > result(points.size());
   while (st.executeStep()) {
