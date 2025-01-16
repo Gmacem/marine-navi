@@ -26,7 +26,7 @@ time_t ParseDate(const std::string& repr, const std::string& format) {
   struct tm tm;
   std::istringstream ss(repr);
   ss >> std::get_time(&tm, format.data());
-  return mktime(&tm);
+  return timegm(&tm);
 }
 
 std::string ToString(time_t t, const std::string& format) {

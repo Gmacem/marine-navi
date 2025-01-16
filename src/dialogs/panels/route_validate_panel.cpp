@@ -67,7 +67,7 @@ time_t GetTimeFromCtrls(wxDatePickerCtrl* date, wxTimePickerCtrl* time) {
   tmDateTime.tm_sec = dateValue.GetSecond();
   tmDateTime.tm_isdst = -1;
 
-  return mktime(&tmDateTime);
+  return timegm(&tmDateTime);
 }
 
 }  // namespace
