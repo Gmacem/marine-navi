@@ -1,5 +1,7 @@
 #include "depart_time_input.h"
 
+#include <ctime>
+
 namespace marine_navi::dialogs::panels {
 
 namespace {
@@ -22,7 +24,7 @@ time_t GetTimeFromCtrls(wxDatePickerCtrl* date, wxTimePickerCtrl* time) {
   tmDateTime.tm_sec = dateValue.GetSecond();
   tmDateTime.tm_isdst = -1;
 
-  return mktime(&tmDateTime);
+  return timegm(&tmDateTime);
 }
 } // namespace
 
