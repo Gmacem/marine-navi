@@ -23,4 +23,4 @@ ON
         tr.geom,
         fr.geom
     ) <= $2
-WHERE fr.started_at >= $3;
+WHERE fr.end_at >= $3 AND fr.end_at <= $4;

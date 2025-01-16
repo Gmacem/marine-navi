@@ -114,9 +114,10 @@ DbClient::SelectClosestForecasts(
     });
   }
   const std::string date = common::ToString(min_date);
+  const std::string max_date = common::ToString(min_date + 2*24*60*60);
 
   const auto query =
-      query_template.MakeQuery(query_builder::ComposeArguments(points_with_id, max_distance_rad, date));
+      query_template.MakeQuery(query_builder::ComposeArguments(points_with_id, max_distance_rad, date, max_date));
 
   SQLite::Statement st(*db_, query);
   std::vector<std::tuple<entities::ForecastPoint, double, int>> result;

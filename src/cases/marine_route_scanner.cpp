@@ -104,7 +104,8 @@ std::vector<MarineRouteScanner::RoutePointWithForecast> MarineRouteScanner::GetR
   std::vector<common::Point> points;
   std::transform(route_points.begin(), route_points.end(), std::back_inserter(points),
                  [](const entities::RoutePoint& route_point) { return route_point.point; });
-  auto forecasts = db_client_->SelectClosestForecasts(points, kDangerousDistanceRad, route_data_.DepartTime);
+  const auto min_get_time = route_data_.DepartTime - 3*60*60;
+  auto forecasts = db_client_->SelectClosestForecasts(points, kDangerousDistanceRad, min_get_time);
   const auto forecast_accessor = helpers::ForecastAccessor(forecasts);
 
   time_t cur_time = route_data_.DepartTime;
