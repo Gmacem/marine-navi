@@ -6,14 +6,12 @@ namespace marine_navi::dialogs::panels {
 
 namespace {
 
-PlugIn_Route_Ex MakeRouteFromBestRouteResult(const marine_navi::cases::BestRouteResult& best_route_result) {
-    PlugIn_Route_Ex route;
-
+PlugIn_Route_Ex* MakeRouteFromBestRouteResult(const marine_navi::cases::BestRouteResult& best_route_result) {
+    PlugIn_Route_Ex* route = new PlugIn_Route_Ex;
+    int id = 0;
     for (const auto& point : best_route_result.points) {
-        PlugIn_Waypoint_Ex waypoint;
-        waypoint.m_lat = point.Lat;
-        waypoint.m_lon = point.Lon;
-        route.pWaypointList->Append(&waypoint);
+        auto* waypoint = new PlugIn_Waypoint_Ex(point.Lat, point.Lon, wxEmptyString, wxEmptyString, "best_rout_" + std::to_string(id++));
+        route->pWaypointList->Append(waypoint);
     }
 
     return route;
@@ -71,8 +69,8 @@ void BestRouteBuilderPanel::OnMakeBestRoute(wxCommandEvent& event){
         .score_type = cases::BestRouteInput::ScoreType::kTime
     };
     const auto best_route = best_route_maker_->MakeBestRoute(input);
-    auto render_route = MakeRouteFromBestRouteResult(best_route);
-    render_overlay_->RenderBestPath(&render_route);
+    auto* render_route = MakeRouteFromBestRouteResult(best_route);
+    render_overlay_->RenderBestPath(render_route);
 }
 
 void BestRouteBuilderPanel::BindEvents() {
