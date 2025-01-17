@@ -94,7 +94,7 @@ static int csv_parse_line(struct csv_parser_data* d) {
 //  E_LINE_TOO_WIDE: on line too wide
 //  E_QUOTED_STRING: at least 1 Quoted String is ill-formatted
 //
-int csv_parse(FILE* fp, CSV_CB_record_handler cb, void* params) {
+int csv_parse(FILE* fp, CSV_CB_record_handler cb, void* params, int skip_line) {
   // char buff[MAX_LINE_LEN];
   struct csv_parser_data d;
 
@@ -106,6 +106,10 @@ int csv_parse(FILE* fp, CSV_CB_record_handler cb, void* params) {
     int r;
     if (d.buff[MAX_LINE_LEN - 1] == '\0' && d.buff[MAX_LINE_LEN - 2] != '\n')
       return E_LINE_TOO_WIDE;
+    if (skip_line > 0) {
+      skip_line--;
+      continue;
+    }
     if (E_QUOTED_STRING == (r = csv_parse_line(&d)))
       return E_QUOTED_STRING;
     else if (r != 0)

@@ -28,6 +28,6 @@ enum {
 typedef int (*CSV_CB_record_handler)(void* params, int colum_cnt,
                                      const char** column_values);
 
-int csv_parse(FILE* fp, CSV_CB_record_handler cb, void* params);
+int csv_parse(FILE* fp, CSV_CB_record_handler cb, void* params, int skip_line);
 
 #endif

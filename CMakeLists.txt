@@ -40,6 +40,8 @@ include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 add_subdirectory("opencpn-libs/${PKG_API_LIB}")
 target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(VERSION_PATCH ${PROJECT_VERSION_PATCH})

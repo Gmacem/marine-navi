@@ -47,7 +47,7 @@ function init_shipdriver_remote() {
         echo "Removing existing shipdriver remote."
     fi
     echo "Adding new shipdriver remote"
-    git remote add shipdriver https://github.com/Rasbats/shipdriver_pi.git
+    git remote add shipdriver https://github.com/Gmacem/marine_navi.git
     # Fetch all available shipdriver sd* tags
     for t in $(list_sd_tags); do
         git fetch -q shipdriver refs/tags/$t:refs/tags/$t --no-tags

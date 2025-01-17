@@ -38,15 +38,14 @@ modules:
       buildsystem: cmake
       config-opts:
           - -DCMAKE_INSTALL_PREFIX=/app/extensions/@app_id
-          - -DCMAKE_BUILD_TYPE:STRING=Release
+          - -DCMAKE_BUILD_TYPE:STRING=Debug
           - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
           - -DBUILD_TYPE:STRING=tarball
           - -Uplugin_target
-      build-options:
-          cxxflags: -DFLATPAK -O3
-          cflags: -DFLATPAK -O3
+      # build-options:
+      #     cxxflags: -DFLATPAK -O3
+      #     cflags: -DFLATPAK -O3
           # The flatpak-builder default CFLAGS adds -g
       sources:
-          - type: git
-            url: ..
-            branch: HEAD
+          - type: dir
+            path: ..
