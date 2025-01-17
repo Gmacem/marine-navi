@@ -4,17 +4,17 @@ WITH points(id, geom) AS (
     VALUES $1
 )
 SELECT 
-    d.depth, 
-    ST_AsText(d.geom) as geom, 
+    depths.depth, 
+    ST_AsText(depths.geom) as geom, 
     points.id 
-FROM depths d 
+FROM depths 
 INNER JOIN 
     points 
 ON 
     ST_Distance(
         points.geom,
-        d.geom
+        depths.geom
     ) <= $2
 WHERE 
-    -d.depth <= $3
+    -depths.depth <= $3
 ORDER BY points.id ASC;
